@@ -1,0 +1,53 @@
+// ============================================================
+// src/styles/_variables.scss
+// 変数・ミックスイン定義
+// ============================================================
+
+// カラー
+$color-purple:      #6B4FBB;
+$color-purple-light:#EDE8FF;
+$color-purple-dark: #4A3280;
+$color-gold:        #F5A623;
+$color-gold-light:  #FFF8E8;
+$color-sky:         #4A90D9;
+$color-sky-light:   #EAF4FF;
+$color-green:       #4CAF7D;
+$color-coral:       #FF6B6B;
+$color-ink:         #2C2040;
+$color-ink-muted:   #6B5F80;
+$color-surface:     #FAFAF8;
+$color-white:       #FFFFFF;
+
+// ボーダーラジウス
+$radius-sm: 12px;
+$radius-md: 16px;
+$radius-lg: 20px;
+$radius-pill: 50px;
+
+// アニメーション時間
+$duration-fast:   0.15s;
+$duration-normal: 0.3s;
+$duration-slow:   0.6s;
+
+// イージング
+$ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+$ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+$ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+// ミックスイン
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+@mixin gpu {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}

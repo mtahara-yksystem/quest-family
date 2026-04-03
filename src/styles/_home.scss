@@ -1,0 +1,410 @@
+// ============================================================
+// src/styles/_home.scss
+// ホーム画面のスタイル
+// ============================================================
+
+@use 'variables' as *;
+@use 'keyframes';
+
+// ============================================================
+// レイアウト
+// ============================================================
+
+.home {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: $color-sky-light;
+
+  &__content {
+    flex: 1;
+    padding: 16px 20px 100px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar { display: none; }
+  }
+}
+
+// ============================================================
+// ヘッダー
+// ============================================================
+
+.home-header {
+  background: linear-gradient(135deg, $color-sky 0%, darken($color-sky, 15%) 100%);
+  padding: 16px 20px 24px;
+  flex-shrink: 0;
+
+  &__greeting {
+    font-size: 13px;
+    color: rgba($color-white, 0.8);
+    font-weight: 700;
+  }
+
+  &__name {
+    font-size: 22px;
+    font-weight: 900;
+    color: $color-white;
+    margin-bottom: 12px;
+  }
+}
+
+// ============================================================
+// クエストバー
+// ============================================================
+
+.quest-bar {
+  background: rgba($color-white, 0.15);
+  border-radius: $radius-sm;
+  padding: 10px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background $duration-fast;
+
+  &:active {
+    background: rgba($color-white, 0.22);
+  }
+
+  &__label {
+    font-size: 11px;
+    color: rgba($color-white, 0.7);
+    font-weight: 700;
+  }
+
+  &__title {
+    font-size: 14px;
+    color: $color-white;
+    font-weight: 800;
+  }
+
+  &__progress {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  &__bar-track {
+    flex: 1;
+    height: 6px;
+    background: rgba($color-white, 0.25);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  &__bar-fill {
+    height: 100%;
+    background: $color-gold;
+    border-radius: 3px;
+    transition: width 0.8s $ease-out;
+  }
+
+  &__count {
+    font-size: 11px;
+    color: rgba($color-white, 0.8);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  &__arrow {
+    font-size: 20px;
+    color: rgba($color-white, 0.6);
+    margin-left: 8px;
+  }
+}
+
+// ============================================================
+// マップカード
+// ============================================================
+
+.map-card {
+  background: $color-white;
+  border-radius: $radius-lg;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 12px rgba($color-ink, 0.08);
+  cursor: pointer;
+  transition: transform $duration-fast;
+
+  &:active { transform: scale(0.98); }
+
+  &__label {
+    font-size: 11px;
+    font-weight: 800;
+    color: $color-ink-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+  }
+
+  &__scene {
+    background: linear-gradient(180deg, #87CEEB 0%, #98D8A8 60%, #5A9E6F 100%);
+    border-radius: $radius-sm;
+    height: 120px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  &__path {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    height: 6px;
+    background: rgba($color-white, 0.5);
+    border-radius: 3px;
+  }
+
+  &__trees-left {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 20px;
+  }
+
+  &__trees-right {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 20px;
+  }
+}
+
+// ============================================================
+// マップ上のキャラクター・モンスター（アニメーション付き）
+// ============================================================
+
+.map-character {
+  position: absolute;
+  bottom: 20px;
+  font-size: 40px;
+  filter: drop-shadow(0 2px 4px rgba($color-ink, 0.2));
+  // ★ 歩くアニメーション（常時）
+  animation: walk 0.8s ease-in-out infinite alternate;
+  transition: left 1.5s $ease-out; // よかったこと登録で位置が変わるとき
+
+  &--moving {
+    animation:
+      walk 0.6s ease-in-out infinite alternate,
+      mapCharAdvance 1.5s $ease-out forwards;
+  }
+}
+
+@keyframes mapCharAdvance {
+  0%   { left: var(--char-from, 25%); }
+  100% { left: var(--char-to, 35%); }
+}
+
+.map-monster {
+  position: absolute;
+  bottom: 20px;
+  right: 20%;
+  font-size: 36px;
+  filter: drop-shadow(0 2px 4px rgba($color-ink, 0.2));
+  animation: monsterShake 2s ease-in-out infinite;
+
+  &--near {
+    // キャラクターが近づくと揺れが激しくなる
+    animation: monsterShake 0.8s ease-in-out infinite;
+  }
+
+  &--defeated {
+    animation: bossFall 0.8s $ease-out forwards;
+  }
+}
+
+// ============================================================
+// キャラクターカード
+// ============================================================
+
+.char-card {
+  background: $color-white;
+  border-radius: $radius-lg;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 12px rgba($color-ink, 0.08);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: transform $duration-fast;
+
+  &:active { transform: scale(0.98); }
+
+  &__avatar {
+    font-size: 52px;
+    // ふわふわ浮くアニメーション
+    animation: float 3s ease-in-out infinite;
+  }
+
+  &__info {
+    flex: 1;
+  }
+
+  &__name {
+    font-size: 16px;
+    font-weight: 900;
+    color: $color-ink;
+  }
+
+  &__level {
+    font-size: 12px;
+    color: $color-purple;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  &__arrow {
+    font-size: 20px;
+    color: #ccc;
+  }
+}
+
+// ============================================================
+// スキルバー（キャラクターカード内）
+// ============================================================
+
+.skill-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.skill-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &__label {
+    font-size: 11px;
+    color: $color-ink-muted;
+    font-weight: 700;
+    width: 44px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  &__track {
+    flex: 1;
+    height: 5px;
+    background: #F0EBF8;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  &__fill {
+    height: 100%;
+    background: $color-purple;
+    border-radius: 3px;
+    transition: width 0.8s $ease-out;
+  }
+}
+
+// ============================================================
+// 最近の記録
+// ============================================================
+
+.section-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: $color-ink-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+  margin-top: 20px;
+}
+
+.record-item {
+  background: $color-white;
+  border-radius: $radius-sm;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 6px rgba($color-ink, 0.06);
+
+  &--new {
+    animation: fadeInUp 0.4s $ease-out both;
+  }
+
+  &__stamp {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  &__body {
+    flex: 1;
+  }
+
+  &__comment {
+    font-size: 13px;
+    font-weight: 700;
+    color: $color-ink;
+  }
+
+  &__meta {
+    font-size: 11px;
+    color: $color-ink-muted;
+    margin-top: 2px;
+  }
+}
+
+// ============================================================
+// FAB（記録ボタン）
+// ============================================================
+
+.fab {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, $color-gold 0%, lighten($color-gold, 10%) 100%);
+  color: $color-ink;
+  border: none;
+  border-radius: $radius-pill;
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 900;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba($color-gold, 0.5);
+  white-space: nowrap;
+  z-index: 10;
+  transition: transform $duration-fast, box-shadow $duration-fast;
+
+  &:active {
+    transform: translateX(-50%) scale(0.95);
+    box-shadow: 0 3px 12px rgba($color-gold, 0.4);
+  }
+
+  // 登録直後にパルス
+  &--pulse {
+    animation: levelGlow 0.6s ease-out;
+  }
+}
+
+// ============================================================
+// 空状態
+// ============================================================
+
+.empty-state {
+  text-align: center;
+  padding: 32px 0;
+  color: $color-ink-muted;
+  font-size: 14px;
+  line-height: 1.7;
+
+  &__icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    animation: float 3s ease-in-out infinite;
+  }
+}

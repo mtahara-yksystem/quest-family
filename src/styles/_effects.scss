@@ -1,0 +1,379 @@
+// ============================================================
+// src/styles/_effects.scss
+// エフェクト用クラス定義
+// ============================================================
+
+@use 'variables' as *;
+@use 'keyframes';
+
+// ============================================================
+// 記録完了エフェクト (.effect-record)
+// ============================================================
+
+.effect-record-overlay {
+  @include overlay;
+  @include flex-center;
+  background: rgba($color-ink, 0.7);
+  animation: fadeIn $duration-normal $ease-out both;
+  flex-direction: column;
+  gap: 16px;
+
+  &.is-hiding {
+    animation: fadeOut $duration-normal $ease-out both;
+  }
+}
+
+.effect-record-stamp {
+  @include gpu;
+  font-size: 80px;
+  animation: stampDrop 0.6s $ease-bounce both;
+  position: relative;
+
+  // 波紋
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border-radius: 50%;
+    background: rgba($color-gold, 0.4);
+    animation: ripple 1s ease-out 0.3s both;
+  }
+
+  &::after {
+    animation-delay: 0.5s;
+  }
+}
+
+.effect-record-title {
+  color: $color-white;
+  font-size: 28px;
+  font-weight: 900;
+  animation: fadeInUp 0.4s $ease-out 0.4s both;
+}
+
+.effect-record-comment {
+  color: rgba($color-white, 0.85);
+  font-size: 16px;
+  font-weight: 700;
+  animation: fadeInUp 0.4s $ease-out 0.5s both;
+  text-align: center;
+  max-width: 280px;
+}
+
+.effect-record-quest {
+  background: rgba($color-white, 0.12);
+  border-radius: $radius-md;
+  padding: 14px 20px;
+  width: 280px;
+  animation: fadeInUp 0.4s $ease-out 0.6s both;
+
+  &__label {
+    font-size: 11px;
+    color: rgba($color-white, 0.6);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+
+  &__title {
+    font-size: 14px;
+    color: $color-white;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  &__bar-track {
+    height: 8px;
+    background: rgba($color-white, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  &__bar-fill {
+    height: 100%;
+    background: $color-gold;
+    border-radius: 4px;
+    animation: barGrow $duration-slow $ease-out 0.8s both;
+  }
+
+  &__count {
+    font-size: 11px;
+    color: rgba($color-white, 0.6);
+    font-weight: 700;
+    margin-top: 4px;
+  }
+}
+
+// ポイント加算テキスト（ホーム画面に浮かぶ）
+.effect-point-float {
+  position: fixed;
+  font-size: 20px;
+  font-weight: 900;
+  color: $color-gold;
+  pointer-events: none;
+  z-index: 200;
+  animation: pointFloat 1.2s $ease-out both;
+  text-shadow: 0 2px 8px rgba($color-gold, 0.5);
+}
+
+// ============================================================
+// コンフェッティ (.effect-confetti)
+// ============================================================
+
+.effect-confetti {
+  @include overlay;
+  pointer-events: none;
+  overflow: hidden;
+
+  &__piece {
+    @include gpu;
+    position: absolute;
+    top: -20px;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    animation:
+      confettiFall var(--fall-duration, 2.5s) linear var(--fall-delay, 0s) both,
+      confettiSway var(--sway-duration, 1.2s) ease-in-out var(--fall-delay, 0s) infinite;
+
+    &--circle { border-radius: 50%; }
+    &--strip  { width: 4px; height: 14px; }
+  }
+}
+
+// ============================================================
+// スパークル (.effect-sparkle)
+// ============================================================
+
+.effect-sparkle {
+  position: absolute;
+  pointer-events: none;
+  z-index: 10;
+
+  &__star {
+    @include gpu;
+    position: absolute;
+    font-size: 16px;
+    animation: sparkle 0.8s $ease-out var(--sparkle-delay, 0s) both;
+  }
+}
+
+// ============================================================
+// レベルアップエフェクト (.effect-levelup)
+// ============================================================
+
+.effect-levelup-overlay {
+  @include overlay;
+  @include flex-center;
+  background: radial-gradient(ellipse at center, rgba($color-gold, 0.3) 0%, rgba($color-ink, 0.85) 70%);
+  animation: fadeIn $duration-normal $ease-out both;
+  flex-direction: column;
+  gap: 12px;
+
+  &.is-hiding {
+    animation: fadeOut $duration-normal $ease-out both;
+  }
+}
+
+.effect-levelup-char {
+  font-size: 72px;
+  animation: charShine 1.5s ease-in-out 0.3s both, scaleBounce 0.6s $ease-bounce both;
+  position: relative;
+
+  // 輝きリング
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -16px;
+    border-radius: 50%;
+    border: 3px solid rgba($color-gold, 0.8);
+    animation: levelGlow 1s ease-out 0.5s infinite;
+  }
+}
+
+.effect-levelup-label {
+  font-size: 14px;
+  font-weight: 800;
+  color: $color-gold;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: fadeInDown 0.4s $ease-out 0.3s both;
+}
+
+.effect-levelup-text {
+  font-size: 52px;
+  font-weight: 900;
+  color: $color-white;
+  text-shadow: 0 0 30px rgba($color-gold, 0.8);
+  animation: levelTextPop 0.6s $ease-bounce 0.4s both;
+
+  span {
+    color: $color-gold;
+  }
+}
+
+.effect-levelup-skills {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 260px;
+  animation: fadeInUp 0.4s $ease-out 0.7s both;
+}
+
+.effect-levelup-skill {
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__label {
+    font-size: 12px;
+    color: rgba($color-white, 0.8);
+    font-weight: 700;
+    width: 60px;
+  }
+
+  &__track {
+    flex: 1;
+    height: 6px;
+    background: rgba($color-white, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  &__fill {
+    height: 100%;
+    background: linear-gradient(90deg, $color-purple, lighten($color-purple, 20%));
+    border-radius: 3px;
+    animation: barGrow 0.8s $ease-out var(--skill-delay, 0.8s) both;
+  }
+}
+
+// ============================================================
+// ボス討伐エフェクト (.effect-boss)
+// ============================================================
+
+.effect-boss-overlay {
+  @include overlay;
+  @include flex-center;
+  background: rgba($color-ink, 0.9);
+  animation: fadeIn $duration-normal $ease-out both;
+  flex-direction: column;
+  gap: 16px;
+
+  &.is-shaking {
+    animation: screenShake 0.6s $ease-in-out both;
+  }
+
+  &.is-hiding {
+    animation: fadeOut $duration-slow $ease-out both;
+  }
+}
+
+.effect-boss-monster {
+  font-size: 80px;
+  animation: float 2s ease-in-out infinite;
+  transition: animation $duration-normal;
+
+  &.is-defeated {
+    animation: bossFall 1s $ease-in-out 0.5s both;
+  }
+}
+
+.effect-boss-particles {
+  @include overlay;
+  pointer-events: none;
+  overflow: hidden;
+
+  &__piece {
+    @include gpu;
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    animation: explode 0.8s $ease-out var(--explode-delay, 0s) both;
+  }
+}
+
+.effect-boss-banner {
+  background: linear-gradient(135deg, $color-gold, darken($color-gold, 10%));
+  padding: 16px 32px;
+  border-radius: $radius-pill;
+  animation: bannerSlideDown 0.8s $ease-bounce 0.8s both;
+  text-align: center;
+
+  &__title {
+    font-size: 13px;
+    font-weight: 800;
+    color: rgba($color-ink, 0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+
+  &__chapter {
+    font-size: 22px;
+    font-weight: 900;
+    color: $color-ink;
+  }
+}
+
+.effect-boss-next {
+  font-size: 15px;
+  color: rgba($color-white, 0.75);
+  font-weight: 700;
+  animation: fadeIn 0.4s $ease-out 1.5s both;
+  text-align: center;
+}
+
+// ============================================================
+// ラスボス討伐 / 周回突入エフェクト (.effect-loop)
+// ============================================================
+
+.effect-loop-overlay {
+  @include overlay;
+  @include flex-center;
+  background: radial-gradient(ellipse at center, $color-purple-dark 0%, darken($color-ink, 5%) 100%);
+  animation: fadeIn $duration-slow $ease-out both;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.effect-loop-crown {
+  font-size: 72px;
+  animation: scaleBounce 0.8s $ease-bounce 0.3s both, float 3s ease-in-out 1s infinite;
+}
+
+.effect-loop-title {
+  font-size: 32px;
+  font-weight: 900;
+  color: $color-gold;
+  text-shadow: 0 0 40px rgba($color-gold, 0.6);
+  animation: levelTextPop 0.6s $ease-bounce 0.6s both;
+  text-align: center;
+}
+
+.effect-loop-sub {
+  font-size: 15px;
+  color: rgba($color-white, 0.75);
+  font-weight: 700;
+  animation: fadeInUp 0.4s $ease-out 1s both;
+  text-align: center;
+}
+
+.effect-loop-badge {
+  background: rgba($color-gold, 0.15);
+  border: 2px solid rgba($color-gold, 0.4);
+  border-radius: $radius-pill;
+  padding: 8px 20px;
+  animation: fadeInUp 0.4s $ease-out 1.2s both;
+
+  span {
+    font-size: 14px;
+    font-weight: 800;
+    color: $color-gold;
+  }
+}

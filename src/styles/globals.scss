@@ -1,0 +1,51 @@
+// ============================================================
+// src/styles/globals.scss
+// globals.css の代わりにこちらを使う
+// layout.tsx で import '@/styles/globals.scss' に変更すること
+// ============================================================
+
+@use 'variables' as *;
+@use 'keyframes';
+@use 'effects';
+@use 'home';
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-purple:       #{$color-purple};
+  --color-purple-light: #{$color-purple-light};
+  --color-gold:         #{$color-gold};
+  --color-sky:          #{$color-sky};
+  --color-green:        #{$color-green};
+  --color-coral:        #{$color-coral};
+  --color-ink:          #{$color-ink};
+  --color-ink-muted:    #{$color-ink-muted};
+  --color-surface:      #{$color-surface};
+
+  --radius-sm:   #{$radius-sm};
+  --radius-md:   #{$radius-md};
+  --radius-lg:   #{$radius-lg};
+  --radius-pill: #{$radius-pill};
+}
+
+body {
+  font-family: 'M PLUS Rounded 1c', 'Zen Maru Gothic', sans-serif;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+// モーション軽減対応
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,153 @@
+// ============================================================
+// src/styles/_quest.scss
+// クエスト詳細ページ
+// ============================================================
+
+@use 'variables' as *;
+@use 'keyframes';
+
+.quest {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+// 進行カード
+.quest-progress-card {
+  background: $color-white;
+  border-radius: $radius-lg;
+  padding: 20px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 12px rgba($color-ink, 0.08);
+
+  &__chapter-no {
+    font-size: 11px;
+    font-weight: 800;
+    color: $color-ink-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+
+  &__title {
+    font-size: 20px;
+    font-weight: 900;
+    color: $color-ink;
+    margin-bottom: 4px;
+  }
+
+  &__desc {
+    font-size: 13px;
+    color: $color-ink-muted;
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  &__bar-label {
+    font-size: 13px;
+    font-weight: 800;
+    color: $color-ink-muted;
+    margin-bottom: 8px;
+  }
+
+  &__bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  &__bar-track {
+    flex: 1;
+    height: 12px;
+    background: #F0EBF8;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  &__bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, $color-purple, lighten($color-purple, 15%));
+    border-radius: 6px;
+    transition: width 0.8s $ease-out;
+    animation: progressPulse 2s ease-in-out infinite;
+  }
+
+  &__bar-count {
+    font-size: 14px;
+    font-weight: 900;
+    color: $color-purple;
+    white-space: nowrap;
+  }
+
+  &__remaining {
+    font-size: 12px;
+    color: $color-ink-muted;
+  }
+}
+
+// ボスカード
+.boss-card {
+  background: linear-gradient(135deg, #FFE8E8, #FFF3F3);
+  border: 2px solid #FFCCCC;
+  border-radius: $radius-lg;
+  padding: 20px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  &__emoji {
+    font-size: 52px;
+    animation: float 2s ease-in-out infinite;
+
+    &--near { animation: monsterShake 0.8s ease-in-out infinite; }
+  }
+
+  &__badge {
+    font-size: 11px;
+    font-weight: 800;
+    color: #CC5555;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+
+  &__name {
+    font-size: 18px;
+    font-weight: 900;
+    color: $color-ink;
+    margin-bottom: 2px;
+  }
+
+  &__status {
+    font-size: 13px;
+    color: $color-ink-muted;
+  }
+}
+
+// 次の章（ロック）
+.chapter-locked {
+  background: $color-white;
+  border-radius: $radius-md;
+  padding: 16px;
+  margin-bottom: 8px;
+  opacity: 0.5;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba($color-ink, 0.06);
+
+  &__icon { font-size: 32px; }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 900;
+    color: $color-ink;
+  }
+
+  &__hint {
+    font-size: 12px;
+    color: $color-ink-muted;
+  }
+}

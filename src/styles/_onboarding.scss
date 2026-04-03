@@ -1,0 +1,92 @@
+// ============================================================
+// src/styles/_onboarding.scss
+// ============================================================
+
+@use 'variables' as *;
+@use 'keyframes';
+
+.onboarding {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+// 初期ポイントプレビューバナー
+.skill-initial-preview {
+  background: $color-purple-light;
+  border-radius: $radius-sm;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &__icon { font-size: 20px; }
+
+  &__total {
+    font-size: 12px;
+    font-weight: 800;
+    color: $color-purple;
+  }
+
+  &__sub {
+    font-size: 11px;
+    color: lighten($color-purple, 15%);
+  }
+}
+
+// スキルスライダーカード
+.skill-slider-card {
+  background: $color-white;
+  border-radius: $radius-md;
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 10px rgba($color-ink, 0.06);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  &__icon { font-size: 24px; }
+
+  &__info { flex: 1; }
+
+  &__name {
+    font-size: 14px;
+    font-weight: 800;
+    color: $color-ink;
+  }
+
+  &__label {
+    font-size: 11px;
+    color: $color-ink-muted;
+    margin-top: 2px;
+    transition: color $duration-normal;
+  }
+
+  &__value {
+    font-size: 13px;
+    font-weight: 900;
+    color: $color-purple;
+    min-width: 24px;
+    text-align: right;
+  }
+
+  &__range {
+    width: 100%;
+    accent-color: $color-purple;
+    cursor: pointer;
+  }
+
+  &__hints {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: $color-ink-muted;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+}
