@@ -181,10 +181,15 @@
   position: absolute;
   bottom: 20px;
   font-size: 40px;
+  z-index: 2;
   filter: drop-shadow(0 2px 4px rgba($color-ink, 0.2));
-  // ★ 歩くアニメーション（常時）
   animation: walk 0.8s ease-in-out infinite alternate;
-  transition: left 1.5s $ease-out; // よかったこと登録で位置が変わるとき
+  transition: left 1.5s $ease-out;
+
+  // 重要：左端 1% のときにキャラが枠外にはみ出さないよう、
+  // 基準を「中央」ではなく「左端」にするか、少し調整します。
+  // ここでは中央基準(translateX(-50%))が一番綺麗に重なります。
+  transform: translateX(-50%);
 
   &--moving {
     animation:
@@ -201,18 +206,16 @@
 .map-monster {
   position: absolute;
   bottom: 20px;
-  right: 20%;
+  // キャラが最大 80% まで来るので、その少し先に配置
+  left: 85%;
+  transform: translateX(-50%);
   font-size: 36px;
+  z-index: 1;
   filter: drop-shadow(0 2px 4px rgba($color-ink, 0.2));
   animation: monsterShake 2s ease-in-out infinite;
 
   &--near {
-    // キャラクターが近づくと揺れが激しくなる
     animation: monsterShake 0.8s ease-in-out infinite;
-  }
-
-  &--defeated {
-    animation: bossFall 0.8s $ease-out forwards;
   }
 }
 

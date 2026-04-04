@@ -69,10 +69,10 @@ export default function HomePage() {
   const requiredRecords = progress?.chapter?.required_records ?? 20
   const progressPct = Math.min((currentRecords / requiredRecords) * 100, 100)
 
-  // キャラの位置をクエスト進行度に連動（8%〜42%の範囲）
-  const charLeft = `${8 + (progressPct / 100) * 34}%`
+  // キャラの位置をクエスト進行度に連動（1%〜79%の範囲）
+  const charLeft = `${1 + (progressPct / 100) * 79}%`
   const prevPct = Math.max(progressPct - (1 / requiredRecords) * 100, 0)
-  const charFromLeft = `${8 + (prevPct / 100) * 34}%`
+  const charFromLeft = `${1 + (prevPct / 100) * 79}%`
 
   return (
     <div className="home">
@@ -118,7 +118,7 @@ export default function HomePage() {
                 '--char-to': charLeft,
               } as React.CSSProperties}
             >
-              🧑‍🦱
+              👦
             </div>
 
             {/* モンスター */}
@@ -130,7 +130,7 @@ export default function HomePage() {
 
         {/* キャラクターカード */}
         <div className="char-card" onClick={() => router.push('/records')}>
-          <div className="char-card__avatar">🧑‍🦱</div>
+          <div className="char-card__avatar">👦</div>
           <div className="char-card__info">
             <div className="char-card__name">{child?.name ?? '...'}</div>
             <div className="char-card__level">⭐ 冒険者の卵</div>
