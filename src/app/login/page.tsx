@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -15,7 +14,10 @@ export default function LoginPage() {
     setLoading(true)
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${location.origin}/home` },
+      options: {
+        // /auth/callback を経由してセッションを確立してからホームへ
+        emailRedirectTo: `${location.origin}/auth/callback?next=/home`,
+      },
     })
     if (!error) setSent(true)
     setLoading(false)
@@ -41,7 +43,6 @@ export default function LoginPage() {
         <h1 className="login__app-name">QuestFamily</h1>
         <p className="login__tagline">子どもの「よかったこと」を記録して<br />一緒に冒険を進めよう</p>
       </div>
-
       <form className="login__form" onSubmit={handleLogin}>
         <div className="input-group">
           <label className="input-label">メールアドレス</label>
@@ -54,11 +55,7 @@ export default function LoginPage() {
             required
           />
         </div>
-        <button
-          type="submit"
-          className="btn btn--primary"
-          disabled={loading}
-        >
+        <button type="submit" className="btn btn--primary" disabled={loading}>
           {loading ? '送信中...' : 'ログインリンクを送る'}
         </button>
       </form>
