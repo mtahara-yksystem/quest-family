@@ -7,37 +7,63 @@ import { DEFAULT_CATEGORIES } from '@/constants'
 
 export default function HomePage() {
   const router = useRouter()
+
+  // 1. 各種データの取得
   const { childId, loading: childIdLoading } = useCurrentChild()
   const { child, loading: childLoading } = useChild(childId)
   const { skills } = useChildSkills(childId)
   const { deeds } = useGoodDeeds(childId, 3)
   const { progress } = useGameProgress(childId)
 
-  // 記録直後のキャラ前進・FABパルス管理
+  // 2. 状態管理
   const [charMoving, setCharMoving] = useState(false)
   const [fabPulse, setFabPulse] = useState(false)
 
-  // ?recorded=1 が付いていたらアニメーション発火
+  // 3. リダイレクト処理 (副作用として実行)
+  useEffect(() => {
+    // 読み込みが終わり、かつ childId が存在しない場合はオンボーディングへ
+    if (!childIdLoading && !childId) {
+      router.push('/onboarding')
+    }
+  }, [childId, childIdLoading, router])
+
+  // 4. アニメーション発火 (?recorded=1 の判定)
   useEffect(() => {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
+
     if (params.get('recorded') === '1') {
       setCharMoving(true)
       setFabPulse(true)
-      setTimeout(() => setCharMoving(false), 1800)
-      setTimeout(() => setFabPulse(false), 800)
+
+      const moveTimer = setTimeout(() => setCharMoving(false), 1800)
+      const pulseTimer = setTimeout(() => setFabPulse(false), 800)
+
+      // URLからパラメータを消去（リロード対策）
       window.history.replaceState({}, '', '/home')
+
+      return () => {
+        clearTimeout(moveTimer)
+        clearTimeout(pulseTimer)
+      }
     }
   }, [])
 
-  if (childIdLoading || childLoading) {
-    return <div style={{ padding: 40, textAlign: 'center' }}>読み込み中...</div>
+  // 5. ローディング・ガード（リダイレクト中も含む）
+  if (childIdLoading || childLoading || !childId) {
+    return (
+      <div style={{
+        padding: '100px 40px',
+        textAlign: 'center',
+        fontSize: '1.2rem',
+        color: '#666'
+      }}>
+        読み込み中...
+      </div>
+    )
   }
 
-  if (!childId) {
-    router.push('/onboarding')
-    return null
-  }
+  // --- これ以降は childId が確実に存在する場合のみ実行される ---
 
   const currentRecords = progress?.total_records ?? 0
   const requiredRecords = progress?.chapter?.required_records ?? 20
@@ -83,7 +109,7 @@ export default function HomePage() {
             <div className="map-card__trees-right">🌲🌲</div>
             <div className="map-card__path" />
 
-            {/* ★ キャラクター — 常に歩くアニメーション、記録後に前進 */}
+            {/* キャラクター */}
             <div
               className={`map-character${charMoving ? ' map-character--moving' : ''}`}
               style={{
@@ -95,7 +121,7 @@ export default function HomePage() {
               🧑‍🦱
             </div>
 
-            {/* モンスター — 70%以上で揺れが激しくなる */}
+            {/* モンスター */}
             <div className={`map-monster${progressPct > 70 ? ' map-monster--near' : ''}`}>
               👾
             </div>

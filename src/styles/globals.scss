@@ -1,14 +1,18 @@
 // ============================================================
 // src/styles/globals.scss
-// globals.css の代わりにこちらを使う
 // layout.tsx で import '@/styles/globals.scss' に変更すること
 // ============================================================
 
 @use 'variables' as *;
 @use 'keyframes';
+@use 'common';
 @use 'effects';
 @use 'home';
-@use "sass:color";
+@use 'login';
+@use 'onboarding';
+@use 'stamp';
+@use 'records';
+@use 'quest';
 
 * {
   box-sizing: border-box;
@@ -21,12 +25,12 @@
   --color-purple-light: #{$color-purple-light};
   --color-gold:         #{$color-gold};
   --color-sky:          #{$color-sky};
+  --color-sky-light:    #{$color-sky-light};
   --color-green:        #{$color-green};
   --color-coral:        #{$color-coral};
   --color-ink:          #{$color-ink};
   --color-ink-muted:    #{$color-ink-muted};
   --color-surface:      #{$color-surface};
-
   --radius-sm:   #{$radius-sm};
   --radius-md:   #{$radius-md};
   --radius-lg:   #{$radius-lg};
@@ -40,11 +44,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-// モーション軽減対応
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
