@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // ============================================================
 // src/styles/_onboarding.scss
 // ============================================================
@@ -31,7 +33,7 @@
 
   &__sub {
     font-size: 11px;
-    color: lighten($color-purple, 15%);
+    color: color.adjust($color-purple, $lightness: 15%, $space: hsl);
   }
 }
 

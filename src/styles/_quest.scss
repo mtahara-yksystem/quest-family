@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // ============================================================
 // src/styles/_quest.scss
 // クエスト詳細ページ
@@ -67,7 +69,7 @@
 
   &__bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, $color-purple, lighten($color-purple, 15%));
+    background: linear-gradient(90deg, $color-purple, color.adjust($color-purple, $lightness: 15%, $space: hsl));
     border-radius: 6px;
     transition: width 0.8s $ease-out;
     animation: progressPulse 2s ease-in-out infinite;

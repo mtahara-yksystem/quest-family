@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // ============================================================
 // src/styles/_effects.scss
 // エフェクト用クラス定義
@@ -246,7 +248,7 @@
 
   &__fill {
     height: 100%;
-    background: linear-gradient(90deg, $color-purple, lighten($color-purple, 20%));
+    background: linear-gradient(90deg, $color-purple, color.adjust($color-purple, $lightness: 20%, $space: hsl));
     border-radius: 3px;
     animation: barGrow 0.8s $ease-out var(--skill-delay, 0.8s) both;
   }
@@ -299,7 +301,7 @@
 }
 
 .effect-boss-banner {
-  background: linear-gradient(135deg, $color-gold, darken($color-gold, 10%));
+  background: linear-gradient(135deg, $color-gold, color.adjust($color-gold, $lightness: -10%, $space: hsl));
   padding: 16px 32px;
   border-radius: $radius-pill;
   animation: bannerSlideDown 0.8s $ease-bounce 0.8s both;
@@ -336,7 +338,7 @@
 .effect-loop-overlay {
   @include overlay;
   @include flex-center;
-  background: radial-gradient(ellipse at center, $color-purple-dark 0%, darken($color-ink, 5%) 100%);
+  background: radial-gradient(ellipse at center, $color-purple-dark 0%, color.adjust($color-ink, $lightness: -5%, $space: hsl) 100%);
   animation: fadeIn $duration-slow $ease-out both;
   flex-direction: column;
   gap: 16px;

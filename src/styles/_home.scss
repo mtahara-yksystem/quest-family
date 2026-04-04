@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // ============================================================
 // src/styles/_home.scss
 // ホーム画面のスタイル
@@ -30,7 +32,7 @@
 // ============================================================
 
 .home-header {
-  background: linear-gradient(135deg, $color-sky 0%, darken($color-sky, 15%) 100%);
+  background: linear-gradient(135deg, $color-sky 0%, color.adjust($color-sky, $lightness: -15%, $space: hsl) 100%);
   padding: 16px 20px 24px;
   flex-shrink: 0;
 
@@ -366,7 +368,7 @@
   bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, $color-gold 0%, lighten($color-gold, 10%) 100%);
+  background: linear-gradient(135deg, $color-gold 0%, color.adjust($color-gold, $lightness: 10%, $space: hsl) 100%);
   color: $color-ink;
   border: none;
   border-radius: $radius-pill;
