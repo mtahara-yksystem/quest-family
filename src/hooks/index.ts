@@ -1,10 +1,6 @@
-// ============================================================
-// カスタムフック
-// ============================================================
-
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import type {
   Child,
@@ -13,7 +9,29 @@ import type {
   ChildSkillWithCategory,
 } from '@/types/database'
 
-// ---- ログイン中の親に紐づく子どものID ----
+// ---- 親に紐づく全子ども一覧 ----
+export function useChildren() {
+  const [children, setChildren] = useState<Child[]>([])
+  const [loading, setLoading] = useState(true)
+  const supabase = createClient()
+
+  const fetch = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setLoading(false); return }
+    const { data } = await supabase
+      .from('children')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: true })
+    setChildren(data ?? [])
+    setLoading(false)
+  }, [])
+
+  useEffect(() => { fetch() }, [fetch])
+  return { children, loading, refetch: fetch }
+}
+
+// ---- 後方互換：最初の子どもIDを返す ----
 export function useCurrentChild() {
   const [childId, setChildId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -22,16 +40,9 @@ export function useCurrentChild() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { setLoading(false); return }
-      supabase
-        .from('children')
-        .select('id')
-        .eq('user_id', user.id)
-        .limit(1)
-        .maybeSingle()
-        .then(({ data }) => {
-          if (data) setChildId(data.id)
-          setLoading(false)
-        })
+      supabase.from('children').select('id').eq('user_id', user.id)
+        .order('created_at', { ascending: true }).limit(1).maybeSingle()
+        .then(({ data }) => { setChildId(data?.id ?? null); setLoading(false) })
     })
   }, [])
 
@@ -46,21 +57,14 @@ export function useChild(childId: string | null) {
 
   useEffect(() => {
     if (!childId) { setLoading(false); return }
-    supabase
-      .from('children')
-      .select('*')
-      .eq('id', childId)
-      .maybeSingle()
-      .then(({ data }) => {
-        setChild(data)
-        setLoading(false)
-      })
+    supabase.from('children').select('*').eq('id', childId).single()
+      .then(({ data }) => { setChild(data); setLoading(false) })
   }, [childId])
 
   return { child, loading }
 }
 
-// ---- よかったこと一覧（カテゴリ情報をJOIN）----
+// ---- よかったこと一覧 ----
 export function useGoodDeeds(childId: string | null, limit = 10) {
   const [deeds, setDeeds] = useState<GoodDeedWithCategory[]>([])
   const [loading, setLoading] = useState(true)
@@ -68,22 +72,15 @@ export function useGoodDeeds(childId: string | null, limit = 10) {
 
   useEffect(() => {
     if (!childId) { setLoading(false); return }
-    supabase
-      .from('good_deeds')
-      .select('*, category:categories(*)')
-      .eq('child_id', childId)
-      .order('created_at', { ascending: false })
-      .limit(limit)
-      .then(({ data }) => {
-        setDeeds((data as GoodDeedWithCategory[]) ?? [])
-        setLoading(false)
-      })
+    supabase.from('good_deeds').select('*, category:categories(*)')
+      .eq('child_id', childId).order('created_at', { ascending: false }).limit(limit)
+      .then(({ data }) => { setDeeds((data as GoodDeedWithCategory[]) ?? []); setLoading(false) })
   }, [childId, limit])
 
   return { deeds, loading }
 }
 
-// ---- スキル一覧（カテゴリ情報をJOIN）----
+// ---- スキル一覧（exp降順＝上位スキルが先頭）----
 export function useChildSkills(childId: string | null) {
   const [skills, setSkills] = useState<ChildSkillWithCategory[]>([])
   const [loading, setLoading] = useState(true)
@@ -91,39 +88,30 @@ export function useChildSkills(childId: string | null) {
 
   useEffect(() => {
     if (!childId) { setLoading(false); return }
-    supabase
-      .from('child_skills')
-      .select('*, category:categories(*)')
-      .eq('child_id', childId)
-      .then(({ data }) => {
-        setSkills((data as ChildSkillWithCategory[]) ?? [])
-        setLoading(false)
-      })
+    supabase.from('child_skills').select('*, category:categories(*)')
+      .eq('child_id', childId).order('exp', { ascending: false })
+      .then(({ data }) => { setSkills((data as ChildSkillWithCategory[]) ?? []); setLoading(false) })
   }, [childId])
 
   return { skills, loading }
 }
 
-// ---- ゲーム進行状況（章情報をJOIN）----
+// ---- ゲーム進行状況 ----
 export function useGameProgress(childId: string | null) {
   const [progress, setProgress] = useState<GameProgressWithChapter | null>(null)
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
 
-  useEffect(() => {
+  const fetch = useCallback(async () => {
     if (!childId) { setLoading(false); return }
-    supabase
-      .from('game_progress')
-      .select('*, chapter:chapters(*)')
-      .eq('child_id', childId)
-      .maybeSingle()
-      .then(({ data }) => {
-        setProgress(data as GameProgressWithChapter)
-        setLoading(false)
-      })
+    const { data } = await supabase.from('game_progress')
+      .select('*, chapter:chapters(*)').eq('child_id', childId).single()
+    setProgress(data as GameProgressWithChapter)
+    setLoading(false)
   }, [childId])
 
-  return { progress, loading }
+  useEffect(() => { fetch() }, [fetch])
+  return { progress, loading, refetch: fetch }
 }
 
 // ---- よかったこと登録 ----
@@ -139,84 +127,51 @@ export function useRecordGoodDeed() {
   }) => {
     setLoading(true)
 
-    // 1. good_deeds に登録
     const { error } = await supabase.from('good_deeds').insert({
       child_id: params.childId,
       category_id: params.categoryId,
       comment: params.comment,
       recorded_by: params.recordedBy,
     })
+    if (error) { setLoading(false); return { error } }
 
-    if (error) {
-      setLoading(false)
-      return { error }
-    }
-
-    // 2. スキルEXP +1 → レベルアップ判定
-    const { data: skillBefore } = await supabase
-      .from('child_skills')
-      .select('level, exp')
-      .eq('child_id', params.childId)
-      .eq('category_id', params.categoryId)
-      .single()
+    const { data: skillBefore } = await supabase.from('child_skills')
+      .select('level, exp').eq('child_id', params.childId)
+      .eq('category_id', params.categoryId).single()
 
     await supabase.rpc('increment_skill_exp', {
-      p_child_id: params.childId,
-      p_category_id: params.categoryId,
+      p_child_id: params.childId, p_category_id: params.categoryId,
     })
 
-    const { data: skillAfter } = await supabase
-      .from('child_skills')
-      .select('level, exp')
-      .eq('child_id', params.childId)
-      .eq('category_id', params.categoryId)
-      .single()
+    const { data: skillAfter } = await supabase.from('child_skills')
+      .select('level, exp').eq('child_id', params.childId)
+      .eq('category_id', params.categoryId).single()
 
     const leveledUp = (skillAfter?.level ?? 1) > (skillBefore?.level ?? 1)
 
-    // 3. ゲーム進行 +1 → ボス討伐・周回判定
-    const { data: progressBefore } = await supabase
-      .from('game_progress')
-      .select('*, chapter:chapters(*)')
-      .eq('child_id', params.childId)
-      .single()
+    const { data: progressBefore } = await supabase.from('game_progress')
+      .select('*, chapter:chapters(*)').eq('child_id', params.childId).single()
 
-    await supabase.rpc('increment_game_progress', {
-      p_child_id: params.childId,
-    })
+    await supabase.rpc('increment_game_progress', { p_child_id: params.childId })
 
-    const { data: progressAfter } = await supabase
-      .from('game_progress')
-      .select('*, chapter:chapters(*)')
-      .eq('child_id', params.childId)
-      .single()
+    const { data: progressAfter } = await supabase.from('game_progress')
+      .select('*, chapter:chapters(*)').eq('child_id', params.childId).single()
 
-    // 章が変わった = ボス討伐
     const bossDefeated = progressAfter?.chapter_id !== progressBefore?.chapter_id
-    // loop_count が増えた = 全章クリア・周回突入
     const looped = (progressAfter?.loop_count ?? 1) > (progressBefore?.loop_count ?? 1)
 
-    // 次の章情報を取得（ボス討伐時）
     let nextChapter = null
     if (bossDefeated && !looped) {
-      const { data } = await supabase
-        .from('chapters')
-        .select('title, chapter_no')
-        .eq('id', progressAfter?.chapter_id)
-        .single()
+      const { data } = await supabase.from('chapters')
+        .select('title, chapter_no').eq('id', progressAfter?.chapter_id).single()
       nextChapter = data
     }
 
     setLoading(false)
     return {
-      error: null,
-      leveledUp,
-      newLevel: skillAfter?.level,
-      skillExp: skillAfter?.exp,
-      bossDefeated,
-      looped,
-      newLoopCount: progressAfter?.loop_count,
-      nextChapter,
+      error: null, leveledUp,
+      newLevel: skillAfter?.level, skillExp: skillAfter?.exp,
+      bossDefeated, looped, newLoopCount: progressAfter?.loop_count, nextChapter,
     }
   }
 

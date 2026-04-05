@@ -37,12 +37,19 @@
     flex-shrink: 0;
   }
 
-  &__body { flex: 1; }
+  &__body {
+    flex: 1;
+    overflow: hidden;
+  }
 
   &__comment {
     font-size: 13px;
     font-weight: 700;
     color: $color-ink;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__meta {

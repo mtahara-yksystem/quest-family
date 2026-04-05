@@ -1,24 +1,29 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { DEFAULT_CATEGORIES } from '@/constants'
 import type { Category } from '@/types/database'
 
-export default function StampPage() {
+function StampForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const childId = searchParams.get('childId') ?? ''
   const [categories, setCategories] = useState<Category[]>([])
   const [selected, setSelected] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
-    supabase.from('categories').select('*').then(({ data }) => { if (data) setCategories(data) })
+    supabase.from('categories').select('*')
+      .then(({ data }) => { if (data) setCategories(data) })
   }, [])
 
   const handleSelect = (categoryId: string) => {
     setSelected(categoryId)
-    setTimeout(() => router.push(`/stamp/comment?categoryId=${categoryId}`), 200)
+    setTimeout(() => {
+      router.push(`/stamp/comment?categoryId=${categoryId}&childId=${childId}`)
+    }, 200)
   }
 
   return (
@@ -42,5 +47,13 @@ export default function StampPage() {
         })}
       </div>
     </div>
+  )
+}
+
+export default function StampPage() {
+  return (
+    <Suspense fallback={<div className="loading">読み込み中...</div>}>
+      <StampForm />
+    </Suspense>
   )
 }

@@ -1,24 +1,16 @@
-// ============================================================
-// src/styles/globals.scss
-// layout.tsx で import '@/styles/globals.scss' に変更すること
-// ============================================================
-
 @use 'variables' as *;
 @use 'keyframes';
 @use 'common';
 @use 'effects';
 @use 'home';
+@use 'children';
 @use 'login';
 @use 'onboarding';
 @use 'stamp';
 @use 'records';
 @use 'quest';
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
   --color-purple:       #{$color-purple};
@@ -31,9 +23,9 @@
   --color-ink:          #{$color-ink};
   --color-ink-muted:    #{$color-ink-muted};
   --color-surface:      #{$color-surface};
-  --radius-sm:   #{$radius-sm};
-  --radius-md:   #{$radius-md};
-  --radius-lg:   #{$radius-lg};
+  --radius-sm: #{$radius-sm};
+  --radius-md: #{$radius-md};
+  --radius-lg: #{$radius-lg};
   --radius-pill: #{$radius-pill};
 }
 

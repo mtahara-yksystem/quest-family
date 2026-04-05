@@ -2,7 +2,7 @@
 
 import { useState, Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCurrentChild, useRecordGoodDeed, useGameProgress } from '@/hooks'
+import { useRecordGoodDeed, useGameProgress } from '@/hooks'
 import { DEFAULT_CATEGORIES } from '@/constants'
 import { createClient } from '@/lib/supabase'
 import type { Category } from '@/types/database'
@@ -19,12 +19,13 @@ function CommentForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const categoryId = searchParams.get('categoryId') ?? ''
+  // ★ childId を URL から取得（タブで選んだ子どもに紐づく）
+  const childId = searchParams.get('childId') ?? ''
   const [comment, setComment] = useState('')
   const [category, setCategory] = useState<Category | null>(null)
   const [effect, setEffect] = useState<EffectState>({ type: 'none' })
-  const { childId } = useCurrentChild()
   const { record, loading } = useRecordGoodDeed()
-  const { progress } = useGameProgress(childId)
+  const { progress } = useGameProgress(childId || null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -38,7 +39,8 @@ function CommentForm() {
   const handleSubmit = async (skipComment = false) => {
     if (!childId || !categoryId || !progress) return
     const result = await record({
-      childId, categoryId,
+      childId,
+      categoryId,
       comment: skipComment ? null : comment.trim() || null,
       recordedBy: 'parent',
     })
