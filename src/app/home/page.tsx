@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  useChildren, useChild, useChildSkills,
-  useGoodDeeds, useGameProgress,
-} from '@/hooks'
+import { useChildren, useChild, useChildSkills, useGoodDeeds, useGameProgress } from '@/hooks'
 import { DEFAULT_CATEGORIES } from '@/constants'
 import type { Child } from '@/types/database'
 
@@ -14,7 +11,6 @@ export default function HomePage() {
   const { children, loading: childrenLoading } = useChildren()
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null)
 
-  // 子ども一覧が取得できたら最初の子を選択
   useEffect(() => {
     if (children.length > 0 && !selectedChildId) {
       setSelectedChildId(children[0].id)
@@ -41,11 +37,8 @@ export default function HomePage() {
     }
   }, [])
 
-  if (childrenLoading) {
-    return <div className="loading">読み込み中...</div>
-  }
+  if (childrenLoading) return <div className="loading">読み込み中...</div>
 
-  // 子どもが未登録 → オンボーディングへ
   if (children.length === 0) {
     router.push('/onboarding')
     return null
@@ -58,13 +51,14 @@ export default function HomePage() {
   const prevPct = Math.max(progressPct - (1 / requiredRecords) * 100, 0)
   const charFromLeft = `${1 + (prevPct / 100) * 79}%`
 
-  // スキル表示：上位3件 + 残り数
   const topSkills = skills.slice(0, 3)
   const restCount = Math.max(skills.length - 3, 0)
 
+  // ★ 遷移先に常に selectedChildId を渡す
+  const cid = selectedChildId ?? ''
+
   return (
     <div className="home">
-      {/* ヘッダー */}
       <div className="home-header">
         {/* 子どもタブ */}
         <div className="child-tabs">
@@ -78,7 +72,6 @@ export default function HomePage() {
               <span className="child-tab__name">{c.name}</span>
             </button>
           ))}
-          {/* 子ども追加ボタン */}
           <button
             className="child-tab-add"
             onClick={() => router.push('/onboarding?add=1')}
@@ -93,9 +86,9 @@ export default function HomePage() {
           <div className="home-header__name">{child?.name ?? '...'} の冒険</div>
         </div>
 
-        {/* クエストバー */}
         <div style={{ padding: '8px 20px 20px' }}>
-          <div className="quest-bar" onClick={() => router.push('/quest')}>
+          {/* ★ クエスト確認に childId を渡す */}
+          <div className="quest-bar" onClick={() => router.push(`/quest?childId=${cid}`)}>
             <div style={{ flex: 1 }}>
               <div className="quest-bar__label">現在のクエスト</div>
               <div className="quest-bar__title">
@@ -113,11 +106,9 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* コンテンツ */}
       <div className="home__content">
-
-        {/* マップカード */}
-        <div className="map-card" onClick={() => router.push('/quest')}>
+        {/* マップ ★ childId を渡す */}
+        <div className="map-card" onClick={() => router.push(`/quest?childId=${cid}`)}>
           <div className="map-card__label">マップ</div>
           <div className="map-card__scene">
             <div className="map-card__trees-left">🌲🌲</div>
@@ -125,37 +116,26 @@ export default function HomePage() {
             <div className="map-card__path" />
             <div
               className={`map-character${charMoving ? ' map-character--moving' : ''}`}
-              style={{
-                left: charLeft,
-                '--char-from': charFromLeft,
-                '--char-to': charLeft,
-              } as React.CSSProperties}
+              style={{ left: charLeft, '--char-from': charFromLeft, '--char-to': charLeft } as React.CSSProperties}
             >
               👦
             </div>
-            <div className={`map-monster${progressPct > 70 ? ' map-monster--near' : ''}`}>
-              👾
-            </div>
+            <div className={`map-monster${progressPct > 70 ? ' map-monster--near' : ''}`}>👾</div>
           </div>
         </div>
 
-        {/* キャラクターカード — スキル表示：案A */}
-        <div className="char-card" onClick={() => router.push('/records')}>
+        {/* キャラクターカード ★ 記録一覧に childId を渡す */}
+        <div className="char-card" onClick={() => router.push(`/records?childId=${cid}`)}>
           <div className="char-card__avatar">👦</div>
           <div className="char-card__info">
             <div className="char-card__name">{child?.name ?? '...'}</div>
             <div className="char-card__level">⭐ 冒険者の卵</div>
-
-            {/* ★ 案A：アイコン＋Lv＋+Nバッジ */}
             <div className="skill-icons">
               {topSkills.map(skill => {
                 const cat = DEFAULT_CATEGORIES.find(c => c.name === skill.category?.name)
                 return (
                   <div key={skill.id} className="skill-icon-item">
-                    <div
-                      className="skill-icon-item__stamp"
-                      style={{ background: cat?.bgColor ?? '#F3E8FF' }}
-                    >
+                    <div className="skill-icon-item__stamp" style={{ background: cat?.bgColor ?? '#F3E8FF' }}>
                       {cat?.icon ?? '✨'}
                     </div>
                     <div className="skill-icon-item__lv">Lv{skill.level}</div>
@@ -173,7 +153,6 @@ export default function HomePage() {
           <div className="char-card__arrow">›</div>
         </div>
 
-        {/* 最近の記録 */}
         <div className="section-label">最近のよかったこと</div>
         {deeds.length === 0 ? (
           <div className="empty-state">
@@ -190,9 +169,7 @@ export default function HomePage() {
                 </div>
                 <div className="record-item__body">
                   <div className="record-item__comment">{deed.comment ?? deed.category?.name}</div>
-                  <div className="record-item__meta">
-                    {deed.category?.name} · {deed.recorded_by === 'parent' ? '親が登録' : '自分で登録'}
-                  </div>
+                  <div className="record-item__meta">{deed.category?.name}</div>
                 </div>
               </div>
             )
@@ -200,10 +177,10 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* FAB — 選択中の子どもIDをクエリで渡す */}
+      {/* FAB ★ スタンプ選択に childId を渡す */}
       <button
         className={`fab${fabPulse ? ' fab--pulse' : ''}`}
-        onClick={() => router.push(`/stamp?childId=${selectedChildId}`)}
+        onClick={() => router.push(`/stamp?childId=${cid}`)}
       >
         ＋ よかったこと を記録
       </button>

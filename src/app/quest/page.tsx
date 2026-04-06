@@ -1,13 +1,15 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useCurrentChild, useGameProgress } from '@/hooks'
+import { Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useGameProgress } from '@/hooks'
 import { DEFAULT_CHAPTERS } from '@/constants'
 
-export default function QuestPage() {
+function QuestContent() {
   const router = useRouter()
-  const { childId } = useCurrentChild()
-  const { progress, loading } = useGameProgress(childId)
+  const searchParams = useSearchParams()
+  const childId = searchParams.get('childId') ?? ''
+  const { progress, loading } = useGameProgress(childId || null)
 
   const currentChapter = progress?.chapter
   const currentRecords = progress?.total_records ?? 0
@@ -21,10 +23,15 @@ export default function QuestPage() {
       <h1 className="page-title">クエスト進行</h1>
 
       {loading && <div className="loading">読み込み中...</div>}
+      {!loading && !currentChapter && (
+        <div className="empty-state">
+          <div className="empty-state__icon">🗺️</div>
+          データが見つかりません
+        </div>
+      )}
 
       {!loading && currentChapter && (
         <>
-          {/* 進行カード */}
           <div className="quest-progress-card">
             <div className="quest-progress-card__chapter-no">第{currentChapter.chapter_no}章</div>
             <div className="quest-progress-card__title">「{currentChapter.title}」</div>
@@ -41,11 +48,8 @@ export default function QuestPage() {
             </div>
           </div>
 
-          {/* ボスカード */}
           <div className="boss-card">
-            <div className={`boss-card__emoji${progressPct > 70 ? ' boss-card__emoji--near' : ''}`}>
-              👾
-            </div>
+            <div className={`boss-card__emoji${progressPct > 70 ? ' boss-card__emoji--near' : ''}`}>👾</div>
             <div>
               <div className="boss-card__badge">ボスモンスター</div>
               <div className="boss-card__name">{currentChapter.boss_name ?? 'スライムキング'}</div>
@@ -55,7 +59,6 @@ export default function QuestPage() {
             </div>
           </div>
 
-          {/* 次の章 */}
           <div className="section-label">この先の冒険</div>
           {DEFAULT_CHAPTERS
             .filter(ch => ch.chapter_no > currentChapter.chapter_no)
@@ -71,5 +74,13 @@ export default function QuestPage() {
         </>
       )}
     </div>
+  )
+}
+
+export default function QuestPage() {
+  return (
+    <Suspense fallback={<div className="loading">読み込み中...</div>}>
+      <QuestContent />
+    </Suspense>
   )
 }

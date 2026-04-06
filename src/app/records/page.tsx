@@ -1,15 +1,16 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useCurrentChild, useGoodDeeds } from '@/hooks'
+import { useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useGoodDeeds } from '@/hooks'
 import { DEFAULT_CATEGORIES } from '@/constants'
 
-export default function RecordsPage() {
+function RecordsContent() {
   const router = useRouter()
-  const { childId } = useCurrentChild()
+  const searchParams = useSearchParams()
+  const childId = searchParams.get('childId') ?? ''
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null)
-  const { deeds, loading } = useGoodDeeds(childId, 50)
+  const { deeds, loading } = useGoodDeeds(childId || null, 50)
 
   const filtered = activeCategoryId
     ? deeds.filter(d => d.category?.name === DEFAULT_CATEGORIES.find(c => c.categoryId === activeCategoryId)?.name)
@@ -62,7 +63,7 @@ export default function RecordsPage() {
               <div className="record-item__body">
                 <div className="record-item__comment">{deed.comment ?? deed.category?.name}</div>
                 <div className="record-item__meta">
-                  {deed.category?.name} · {date.getMonth() + 1}/{date.getDate()} · {deed.recorded_by === 'parent' ? '親が登録' : '自分で登録'}
+                  {deed.category?.name} · {date.getMonth() + 1}/{date.getDate()}
                 </div>
               </div>
             </div>
@@ -70,5 +71,13 @@ export default function RecordsPage() {
         })}
       </div>
     </div>
+  )
+}
+
+export default function RecordsPage() {
+  return (
+    <Suspense fallback={<div className="loading">読み込み中...</div>}>
+      <RecordsContent />
+    </Suspense>
   )
 }
