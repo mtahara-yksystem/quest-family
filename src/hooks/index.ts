@@ -130,8 +130,7 @@ export function useRecordGoodDeed() {
     const { error } = await supabase.from('good_deeds').insert({
       child_id: params.childId,
       category_id: params.categoryId,
-      comment: params.comment,
-      recorded_by: params.recordedBy,
+      comment: params.comment
     })
     if (error) { setLoading(false); return { error } }
 
