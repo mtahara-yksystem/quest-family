@@ -31,7 +31,6 @@ export type GoodDeed = {
   child_id: string
   category_id: string
   comment: string | null
-  recorded_by: 'parent' | 'child'
   created_at: string
 }
 
