@@ -1,113 +1,255 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { DEFAULT_CATEGORIES, SLIDER_LABELS, GAME_CONFIG } from '@/constants'
 import type { SkillInitialValues } from '@/types'
 
+interface ChildData {
+  name: string
+  age: string
+  skillValues: SkillInitialValues
+}
+
 export default function OnboardingPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isAddMode = searchParams?.get('add') === '1'
   const supabase = createClient()
-  const [step, setStep] = useState<1 | 2>(1)
-  const [name, setName] = useState('')
-  const [age, setAge] = useState('')
-  const [skillValues, setSkillValues] = useState<SkillInitialValues>(
-    Object.fromEntries(DEFAULT_CATEGORIES.map(c => [c.categoryId, 0]))
-  )
+
+  // ステップ管理: 1=情報入力, 2=スキル設定, 3=追加確認, 4=追加の子情報, 5=追加の子スキル
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1)
   const [loading, setLoading] = useState(false)
 
+  // 子どもデータの配列（複数人対応）
+  const [children, setChildren] = useState<ChildData[]>([
+    {
+      name: '',
+      age: '',
+      skillValues: Object.fromEntries(DEFAULT_CATEGORIES.map(c => [c.categoryId, 0]))
+    }
+  ])
+
+  // 現在編集中の子どものインデックス
+  const [currentChildIndex, setCurrentChildIndex] = useState(0)
+
+  const currentChild = children[currentChildIndex]
+
+  // Step 1: 子どもの情報入力
   const handleStepOne = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim()) return
+    if (!currentChild.name.trim()) return
     setStep(2)
   }
 
-  const handleComplete = async (skip = false) => {
+  // Step 2完了後
+  const handleStepTwoComplete = () => {
+    // 初回登録の場合は追加確認画面へ
+    if (!isAddMode && currentChildIndex === 0) {
+      setStep(3)
+    } else {
+      // 追加モードまたは2人目以降の場合は登録完了
+      handleFinalComplete()
+    }
+  }
+
+  // Step 3: さらに子どもを追加するか確認
+  const handleAddAnother = () => {
+    // 新しい子どもを配列に追加
+    setChildren([
+      ...children,
+      {
+        name: '',
+        age: '',
+        skillValues: Object.fromEntries(DEFAULT_CATEGORIES.map(c => [c.categoryId, 0]))
+      }
+    ])
+    setCurrentChildIndex(children.length) // 新しく追加した子どもに切り替え
+    setStep(4) // 追加の子情報入力へ
+  }
+
+  // Step 4: 追加の子どもの情報入力完了
+  const handleAdditionalChildInfo = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!currentChild.name.trim()) return
+    setStep(5) // 追加の子のスキル設定へ
+  }
+
+  // Step 5完了後
+  const handleAdditionalChildSkills = () => {
+    setStep(3) // 追加確認画面に戻る
+  }
+
+  // 最終登録処理
+  const handleFinalComplete = async () => {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/login'); return }
+    if (!user) {
+      router.push('/login')
+      return
+    }
 
-    const { data: child, error: childError } = await supabase
-      .from('children')
-      .insert({ user_id: user.id, name: name.trim(), age: parseInt(age) || 0 })
-      .select().single()
-
-    if (childError || !child) { setLoading(false); return }
-
+    // カテゴリデータ取得
     const { data: categories } = await supabase.from('categories').select('*')
-    if (categories) {
+    if (!categories) {
+      setLoading(false)
+      return
+    }
+
+    // 第1章のデータ取得
+    const { data: firstChapter } = await supabase
+      .from('chapters')
+      .select('id, required_records')
+      .eq('chapter_no', 1)
+      .single()
+
+    if (!firstChapter) {
+      setLoading(false)
+      return
+    }
+
+    // 全ての子どもを登録
+    for (const childData of children) {
+      if (!childData.name.trim()) continue
+
+      // 子どもを登録
+      const { data: child, error: childError } = await supabase
+        .from('children')
+        .insert({
+          user_id: user.id,
+          name: childData.name.trim(),
+          age: parseInt(childData.age) || 0
+        })
+        .select()
+        .single()
+
+      if (childError || !child) continue
+
+      // スキル初期値を登録
       const skillRows = categories.map(cat => {
         const defaultCat = DEFAULT_CATEGORIES.find(dc => dc.name === cat.name)
-        const initialExp = skip || !defaultCat ? 0 : (skillValues[defaultCat.categoryId] ?? 0)
+        const initialExp = !defaultCat ? 0 : (childData.skillValues[defaultCat.categoryId] ?? 0)
         return {
-          child_id: child.id, category_id: cat.id,
+          child_id: child.id,
+          category_id: cat.id,
           level: Math.floor(initialExp / GAME_CONFIG.EXP_PER_LEVEL) + 1,
           exp: initialExp,
         }
       })
       await supabase.from('child_skills').insert(skillRows)
-    }
 
-    const totalInitialExp = skip ? 0
-      : DEFAULT_CATEGORIES.reduce((sum, cat) => sum + (skillValues[cat.categoryId] ?? 0), 0)
+      // ゲーム進行状況を登録
+      const totalInitialExp = DEFAULT_CATEGORIES.reduce(
+        (sum, cat) => sum + (childData.skillValues[cat.categoryId] ?? 0),
+        0
+      )
 
-    const { data: firstChapter } = await supabase
-      .from('chapters').select('id, required_records').eq('chapter_no', 1).single()
-
-    if (firstChapter) {
       await supabase.from('game_progress').insert({
-        child_id: child.id, chapter_id: firstChapter.id,
+        child_id: child.id,
+        chapter_id: firstChapter.id,
         total_records: Math.min(totalInitialExp, firstChapter.required_records - 1),
         loop_count: 1,
       })
     }
+
     router.push('/home')
   }
 
-  const totalExp = DEFAULT_CATEGORIES.reduce((s, c) => s + (skillValues[c.categoryId] ?? 0), 0)
+  // 現在の子どものデータを更新
+  const updateCurrentChild = (updates: Partial<ChildData>) => {
+    const newChildren = [...children]
+    newChildren[currentChildIndex] = { ...currentChild, ...updates }
+    setChildren(newChildren)
+  }
+
+  const totalExp = DEFAULT_CATEGORIES.reduce(
+    (s, c) => s + (currentChild.skillValues[c.categoryId] ?? 0),
+    0
+  )
 
   return (
     <div className="onboarding">
+      {/* ステップインジケーター */}
       <div className="step-indicator">
-        {[1, 2].map(s => (
-          <div key={s} className={`step-indicator__dot${step >= s ? ' step-indicator__dot--active' : ''}`} />
+        {step <= 2 && [1, 2].map(s => (
+          <div
+            key={s}
+            className={`step-indicator__dot${step >= s ? ' step-indicator__dot--active' : ''}`}
+          />
+        ))}
+        {step >= 4 && [4, 5].map(s => (
+          <div
+            key={s}
+            className={`step-indicator__dot${step >= s ? ' step-indicator__dot--active' : ''}`}
+          />
         ))}
       </div>
 
+      {/* Step 1: 最初の子どもの情報入力 */}
       {step === 1 && (
         <form onSubmit={handleStepOne} style={{ paddingTop: 24 }}>
-          <h1 className="page-title">子どもの情報</h1>
+          <h1 className="page-title">
+            {currentChildIndex === 0 ? '子どもの情報' : `${currentChildIndex + 1}人目の情報`}
+          </h1>
           <p className="page-subtitle">冒険者のプロフィールを登録しよう</p>
+
           <div className="input-group">
             <label className="input-label">名前</label>
-            <input className="input-field" value={name} onChange={e => setName(e.target.value)} placeholder="例：たろう" required />
+            <input
+              className="input-field"
+              value={currentChild.name}
+              onChange={e => updateCurrentChild({ name: e.target.value })}
+              placeholder="例：たろう"
+              required
+            />
           </div>
+
           <div className="input-group">
             <label className="input-label">年齢</label>
-            <input className="input-field" type="number" value={age} onChange={e => setAge(e.target.value)} placeholder="例：6" min="0" max="18" />
+            <input
+              className="input-field"
+              type="number"
+              value={currentChild.age}
+              onChange={e => updateCurrentChild({ age: e.target.value })}
+              placeholder="例：6"
+              min="0"
+              max="18"
+            />
           </div>
-          <button type="submit" className="btn btn--primary">つぎへ →</button>
+
+          <button type="submit" className="btn btn--primary">
+            つぎへ →
+          </button>
         </form>
       )}
 
-      {step === 2 && (
+      {/* Step 2 & 5: スキル初期値設定 */}
+      {(step === 2 || step === 5) && (
         <div style={{ paddingTop: 24 }}>
-          <h1 className="page-title">これまでの冒険は？</h1>
-          <p className="page-subtitle">今までのがんばりをスタートに反映できるよ（任意）</p>
+          <h1 className="page-title">
+            {currentChild.name}の冒険は？
+          </h1>
+          <p className="page-subtitle">
+            今までのがんばりをスタートに反映できるよ（任意）
+          </p>
 
           {totalExp > 0 && (
             <div className="skill-initial-preview">
               <span className="skill-initial-preview__icon">⚔️</span>
               <div>
-                <div className="skill-initial-preview__total">初期ポイント合計：{totalExp}</div>
-                <div className="skill-initial-preview__sub">この分だけクエストが最初から進んだ状態でスタート！</div>
+                <div className="skill-initial-preview__total">
+                  初期ポイント合計：{totalExp}
+                </div>
+                <div className="skill-initial-preview__sub">
+                  この分だけクエストが最初から進んだ状態でスタート！
+                </div>
               </div>
             </div>
           )}
 
           {DEFAULT_CATEGORIES.filter(c => c.categoryId !== 'other').map(cat => {
-            const val = skillValues[cat.categoryId] ?? 0
+            const val = currentChild.skillValues[cat.categoryId] ?? 0
             return (
               <div key={cat.categoryId} className="skill-slider-card">
                 <div className="skill-slider-card__header">
@@ -116,27 +258,158 @@ export default function OnboardingPage() {
                     <div className="skill-slider-card__name">{cat.name}</div>
                     <div className="skill-slider-card__label">{SLIDER_LABELS[val]}</div>
                   </div>
-                  <div className="skill-slider-card__value">{val > 0 ? `+${val}` : ''}</div>
+                  <div className="skill-slider-card__value">
+                    {val > 0 ? `+${val}` : ''}
+                  </div>
                 </div>
                 <input
                   className="skill-slider-card__range"
-                  type="range" min="0" max="10" value={val}
-                  onChange={e => setSkillValues(prev => ({ ...prev, [cat.categoryId]: parseInt(e.target.value) }))}
+                  type="range"
+                  min="0"
+                  max="10"
+                  value={val}
+                  onChange={e => {
+                    const newSkillValues = {
+                      ...currentChild.skillValues,
+                      [cat.categoryId]: parseInt(e.target.value)
+                    }
+                    updateCurrentChild({ skillValues: newSkillValues })
+                  }}
                 />
                 <div className="skill-slider-card__hints">
-                  <span>これからだ！</span><span>いい調子！</span><span>もうベテラン！</span>
+                  <span>これからだ！</span>
+                  <span>いい調子！</span>
+                  <span>もうベテラン！</span>
                 </div>
               </div>
             )
           })}
 
-          <button onClick={() => handleComplete(false)} disabled={loading} className="btn btn--primary">
-            {loading ? '登録中...' : '冒険をはじめる ⚔️'}
+          <button
+            onClick={step === 2 ? handleStepTwoComplete : handleAdditionalChildSkills}
+            disabled={loading}
+            className="btn btn--primary"
+          >
+            {step === 2 ? 'つぎへ ⚔️' : 'この子の設定完了 ✓'}
           </button>
-          <button onClick={() => handleComplete(true)} disabled={loading} className="btn btn--ghost">
-            スキップしてはじめる
+
+          <button
+            onClick={() => {
+              // スキルを0にリセットして次へ
+              updateCurrentChild({
+                skillValues: Object.fromEntries(
+                  DEFAULT_CATEGORIES.map(c => [c.categoryId, 0])
+                )
+              })
+              if (step === 2) {
+                handleStepTwoComplete()
+              } else {
+                handleAdditionalChildSkills()
+              }
+            }}
+            disabled={loading}
+            className="btn btn--ghost"
+          >
+            スキップ
           </button>
         </div>
+      )}
+
+      {/* Step 3: 追加の子ども登録確認 */}
+      {step === 3 && (
+        <div style={{ paddingTop: 24 }}>
+          <h1 className="page-title">他にも冒険者はいる？</h1>
+          <p className="page-subtitle">
+            兄弟姉妹がいる場合、まとめて登録できます
+          </p>
+
+          {/* 登録済みの子どもリスト */}
+          <div style={{ marginBottom: 24 }}>
+            <div className="section-label">登録済み（{children.length}人）</div>
+            {children.map((child, index) => (
+              <div key={index} className="child-preview-card">
+                <span className="child-preview-card__avatar">👦</span>
+                <div className="child-preview-card__info">
+                  <div className="child-preview-card__name">{child.name}</div>
+                  <div className="child-preview-card__age">
+                    {child.age ? `${child.age}歳` : '年齢未設定'}
+                  </div>
+                </div>
+                <div className="child-preview-card__exp">
+                  初期EXP: {DEFAULT_CATEGORIES.reduce(
+                    (s, c) => s + (child.skillValues[c.categoryId] ?? 0),
+                    0
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={handleAddAnother}
+            className="btn btn--secondary"
+            style={{ marginBottom: 12 }}
+          >
+            ＋ もう1人追加する
+          </button>
+
+          <button
+            onClick={handleFinalComplete}
+            disabled={loading}
+            className="btn btn--primary"
+          >
+            {loading ? '登録中...' : `${children.length}人で冒険をはじめる ⚔️`}
+          </button>
+        </div>
+      )}
+
+      {/* Step 4: 追加の子どもの情報入力 */}
+      {step === 4 && (
+        <form onSubmit={handleAdditionalChildInfo} style={{ paddingTop: 24 }}>
+          <h1 className="page-title">{children.length}人目の冒険者</h1>
+          <p className="page-subtitle">プロフィールを登録しよう</p>
+
+          <div className="input-group">
+            <label className="input-label">名前</label>
+            <input
+              className="input-field"
+              value={currentChild.name}
+              onChange={e => updateCurrentChild({ name: e.target.value })}
+              placeholder="例：はなこ"
+              required
+            />
+          </div>
+
+          <div className="input-group">
+            <label className="input-label">年齢</label>
+            <input
+              className="input-field"
+              type="number"
+              value={currentChild.age}
+              onChange={e => updateCurrentChild({ age: e.target.value })}
+              placeholder="例：4"
+              min="0"
+              max="18"
+            />
+          </div>
+
+          <button type="submit" className="btn btn--primary">
+            つぎへ →
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              // この子どもをキャンセルして追加確認画面に戻る
+              setChildren(children.slice(0, -1))
+              setCurrentChildIndex(0)
+              setStep(3)
+            }}
+            className="btn btn--ghost"
+          >
+            キャンセル
+          </button>
+        </form>
       )}
     </div>
   )
