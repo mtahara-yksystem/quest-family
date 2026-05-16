@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useChildren, useChild, useChildSkills, useGoodDeeds, useGameProgress } from '@/hooks'
-import { DEFAULT_CATEGORIES } from '@/constants'
+import { DEFAULT_CATEGORIES, GAME_CONFIG } from '@/constants'
 import type { Child } from '@/types/database'
 
 export default function HomePage() {
@@ -51,10 +51,14 @@ export default function HomePage() {
   const prevPct = Math.max(progressPct - (1 / requiredRecords) * 100, 0)
   const charFromLeft = `${1 + (prevPct / 100) * 79}%`
 
+  // ★ ボス戦カウントダウン
+  const remainingToBooss = Math.max(requiredRecords - currentRecords, 0)
+  const showBossCountdown = remainingToBooss > 0 && remainingToBooss <= 3
+  const bossImminent = remainingToBooss === 1
+
   const topSkills = skills.slice(0, 3)
   const restCount = Math.max(skills.length - 3, 0)
 
-  // ★ 遷移先に常に selectedChildId を渡す
   const cid = selectedChildId ?? ''
 
   return (
@@ -87,7 +91,6 @@ export default function HomePage() {
         </div>
 
         <div style={{ padding: '8px 20px 20px' }}>
-          {/* ★ クエスト確認に childId を渡す */}
           <div className="quest-bar" onClick={() => router.push(`/quest?childId=${cid}`)}>
             <div style={{ flex: 1 }}>
               <div className="quest-bar__label">現在のクエスト</div>
@@ -100,6 +103,12 @@ export default function HomePage() {
                 </div>
                 <div className="quest-bar__count">{currentRecords} / {requiredRecords}</div>
               </div>
+              {/* ★ ボス戦カウントダウン表示 */}
+              {showBossCountdown && (
+                <div className={`boss-countdown${bossImminent ? ' boss-countdown--imminent' : ''}`}>
+                  ⚔️ あと{remainingToBooss}回でボス戦！
+                </div>
+              )}
             </div>
             <div className="quest-bar__arrow">›</div>
           </div>
@@ -107,7 +116,7 @@ export default function HomePage() {
       </div>
 
       <div className="home__content">
-        {/* マップ ★ childId を渡す */}
+        {/* マップ */}
         <div className="map-card" onClick={() => router.push(`/quest?childId=${cid}`)}>
           <div className="map-card__label">マップ</div>
           <div className="map-card__scene">
@@ -120,11 +129,13 @@ export default function HomePage() {
             >
               👦
             </div>
-            <div className={`map-monster${progressPct > 70 ? ' map-monster--near' : ''}`}>👾</div>
+            <div className={`map-monster${progressPct > 70 ? ' map-monster--near' : ''}`}>
+              {showBossCountdown ? '👾❗' : '👾'}
+            </div>
           </div>
         </div>
 
-        {/* キャラクターカード ★ 記録一覧に childId を渡す */}
+        {/* キャラクターカード */}
         <div className="char-card" onClick={() => router.push(`/records?childId=${cid}`)}>
           <div className="char-card__avatar">👦</div>
           <div className="char-card__info">
@@ -133,12 +144,23 @@ export default function HomePage() {
             <div className="skill-icons">
               {topSkills.map(skill => {
                 const cat = DEFAULT_CATEGORIES.find(c => c.name === skill.category?.name)
+                // ★ レベルアップまでの残りEXP計算
+                const expInLevel = skill.exp % GAME_CONFIG.EXP_PER_LEVEL
+                const expToNextLevel = GAME_CONFIG.EXP_PER_LEVEL - expInLevel
+                const showLevelUpSoon = expToNextLevel <= 2 && expToNextLevel > 0
+                
                 return (
                   <div key={skill.id} className="skill-icon-item">
                     <div className="skill-icon-item__stamp" style={{ background: cat?.bgColor ?? '#F3E8FF' }}>
                       {cat?.icon ?? '✨'}
                     </div>
-                    <div className="skill-icon-item__lv">Lv{skill.level}</div>
+                    <div className="skill-icon-item__lv">
+                      Lv{skill.level}
+                      {/* ★ レベルアップ予告バッジ */}
+                      {showLevelUpSoon && (
+                        <span className="skill-icon-item__next">↑{expToNextLevel}</span>
+                      )}
+                    </div>
                   </div>
                 )
               })}
@@ -177,7 +199,7 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* FAB ★ スタンプ選択に childId を渡す */}
+      {/* FAB */}
       <button
         className={`fab${fabPulse ? ' fab--pulse' : ''}`}
         onClick={() => router.push(`/stamp?childId=${cid}`)}
