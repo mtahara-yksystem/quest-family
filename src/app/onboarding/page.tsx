@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+// 1. Suspense をインポートに追加
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { DEFAULT_CATEGORIES, SLIDER_LABELS, GAME_CONFIG } from '@/constants'
@@ -12,7 +13,8 @@ interface ChildData {
   skillValues: SkillInitialValues
 }
 
-export default function OnboardingPage() {
+// 2. メインのロジックは名前を「OnboardingContainer」に変更
+function OnboardingContainer() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const isAddMode = searchParams?.get('add') === '1'
@@ -45,18 +47,15 @@ export default function OnboardingPage() {
 
   // Step 2完了後
   const handleStepTwoComplete = () => {
-    // 初回登録の場合は追加確認画面へ
     if (!isAddMode && currentChildIndex === 0) {
       setStep(3)
     } else {
-      // 追加モードまたは2人目以降の場合は登録完了
       handleFinalComplete()
     }
   }
 
   // Step 3: さらに子どもを追加するか確認
   const handleAddAnother = () => {
-    // 新しい子どもを配列に追加
     setChildren([
       ...children,
       {
@@ -65,20 +64,20 @@ export default function OnboardingPage() {
         skillValues: Object.fromEntries(DEFAULT_CATEGORIES.map(c => [c.categoryId, 0]))
       }
     ])
-    setCurrentChildIndex(children.length) // 新しく追加した子どもに切り替え
-    setStep(4) // 追加の子情報入力へ
+    setCurrentChildIndex(children.length)
+    setStep(4)
   }
 
   // Step 4: 追加の子どもの情報入力完了
   const handleAdditionalChildInfo = (e: React.FormEvent) => {
     e.preventDefault()
     if (!currentChild.name.trim()) return
-    setStep(5) // 追加の子のスキル設定へ
+    setStep(5)
   }
 
   // Step 5完了後
   const handleAdditionalChildSkills = () => {
-    setStep(3) // 追加確認画面に戻る
+    setStep(3)
   }
 
   // 最終登録処理
@@ -90,14 +89,12 @@ export default function OnboardingPage() {
       return
     }
 
-    // カテゴリデータ取得
     const { data: categories } = await supabase.from('categories').select('*')
     if (!categories) {
       setLoading(false)
       return
     }
 
-    // 第1章のデータ取得
     const { data: firstChapter } = await supabase
       .from('chapters')
       .select('id, required_records')
@@ -109,11 +106,9 @@ export default function OnboardingPage() {
       return
     }
 
-    // 全ての子どもを登録
     for (const childData of children) {
       if (!childData.name.trim()) continue
 
-      // 子どもを登録
       const { data: child, error: childError } = await supabase
         .from('children')
         .insert({
@@ -126,7 +121,6 @@ export default function OnboardingPage() {
 
       if (childError || !child) continue
 
-      // スキル初期値を登録
       const skillRows = categories.map(cat => {
         const defaultCat = DEFAULT_CATEGORIES.find(dc => dc.name === cat.name)
         const initialExp = !defaultCat ? 0 : (childData.skillValues[defaultCat.categoryId] ?? 0)
@@ -139,7 +133,6 @@ export default function OnboardingPage() {
       })
       await supabase.from('child_skills').insert(skillRows)
 
-      // ゲーム進行状況を登録
       const totalInitialExp = DEFAULT_CATEGORIES.reduce(
         (sum, cat) => sum + (childData.skillValues[cat.categoryId] ?? 0),
         0
@@ -156,7 +149,6 @@ export default function OnboardingPage() {
     router.push('/home')
   }
 
-  // 現在の子どものデータを更新
   const updateCurrentChild = (updates: Partial<ChildData>) => {
     const newChildren = [...children]
     newChildren[currentChildIndex] = { ...currentChild, ...updates }
@@ -295,7 +287,6 @@ export default function OnboardingPage() {
 
           <button
             onClick={() => {
-              // スキルを0にリセットして次へ
               updateCurrentChild({
                 skillValues: Object.fromEntries(
                   DEFAULT_CATEGORIES.map(c => [c.categoryId, 0])
@@ -323,7 +314,6 @@ export default function OnboardingPage() {
             兄弟姉妹がいる場合、まとめて登録できます
           </p>
 
-          {/* 登録済みの子どもリスト */}
           <div style={{ marginBottom: 24 }}>
             <div className="section-label">登録済み（{children.length}人）</div>
             {children.map((child, index) => (
@@ -400,7 +390,6 @@ export default function OnboardingPage() {
           <button
             type="button"
             onClick={() => {
-              // この子どもをキャンセルして追加確認画面に戻る
               setChildren(children.slice(0, -1))
               setCurrentChildIndex(0)
               setStep(3)
@@ -412,5 +401,14 @@ export default function OnboardingPage() {
         </form>
       )}
     </div>
+  )
+}
+
+// 3. 本来のエクスポート用ページコンポーネントで Suspense を適用
+export default function OnboardingPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 24, textAlign: 'center' }}>読み込み中...</div>}>
+      <OnboardingContainer />
+    </Suspense>
   )
 }
