@@ -56,7 +56,11 @@ function RecordsContent() {
           const cat = DEFAULT_CATEGORIES.find(c => c.name === deed.category?.name)
           const date = new Date(deed.created_at)
           return (
-            <div key={deed.id} className="record-item">
+            <div
+              key={deed.id}
+              className="record-item record-item--clickable"
+              onClick={() => router.push(`/records/${deed.id}?childId=${childId}`)}
+            >
               <div className="record-item__stamp" style={{ background: cat?.bgColor ?? '#F3E8FF' }}>
                 {cat?.icon ?? '✨'}
               </div>
@@ -66,6 +70,7 @@ function RecordsContent() {
                   {deed.category?.name} · {date.getMonth() + 1}/{date.getDate()}
                 </div>
               </div>
+              <div className="record-item__arrow">›</div>
             </div>
           )
         })}
