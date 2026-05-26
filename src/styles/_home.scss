@@ -205,9 +205,9 @@
 
 .map-monster {
   position: absolute;
-  bottom: 20px;
+  bottom: 10px;
   // キャラが最大 80% まで来るので、その少し先に配置
-  left: 85%;
+  left: 80%;
   transform: translateX(-50%);
   font-size: 36px;
   z-index: 1;
@@ -216,6 +216,35 @@
 
   &--near {
     animation: monsterShake 0.8s ease-in-out infinite;
+  }
+
+  // アラートマーク（カウントダウン中）
+  &__alert {
+    position: absolute;
+    top: -8px;
+    right: 10px;
+    font-size: 16px;
+    animation: alertPulse 1s ease-in-out infinite;
+  }
+
+  // SVGアイコンのホバーアニメーション
+  svg {
+    transition: transform $duration-fast;
+  }
+
+  &:hover svg {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes alertPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
   }
 }
 

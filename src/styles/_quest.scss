@@ -86,7 +86,10 @@
   }
 }
 
-// ボスカード
+// ============================================================
+// ボスカード（クエスト詳細画面）
+// ============================================================
+
 .boss-card {
   background: linear-gradient(135deg, #FFE8E8, #FFF3F3);
   border: 2px solid #FFCCCC;
@@ -96,12 +99,46 @@
   display: flex;
   align-items: center;
   gap: 14px;
+  transition: all $duration-normal;
 
+  &--countdown {
+    border-color: rgba($color-coral, 0.4);
+    background: linear-gradient(135deg, rgba($color-coral, 0.08), rgba($color-coral, 0.15));
+    box-shadow: 0 4px 16px rgba($color-coral, 0.15);
+  }
+
+  // アイコンコンテナ
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: float 2s ease-in-out infinite;
+
+    &--near {
+      animation: monsterShake 0.8s ease-in-out infinite;
+    }
+
+    &--imminent {
+      animation: monsterShake 0.4s ease-in-out infinite, bossPulse 1s ease-in-out infinite;
+    }
+
+    svg {
+      filter: drop-shadow(0 2px 6px rgba($color-ink, 0.15));
+    }
+  }
+
+  // 元の絵文字バージョン（後方互換）
   &__emoji {
     font-size: 52px;
     animation: float 2s ease-in-out infinite;
 
-    &--near { animation: monsterShake 0.8s ease-in-out infinite; }
+    &--near {
+      animation: monsterShake 0.8s ease-in-out infinite;
+    }
+
+    &--imminent {
+      animation: monsterShake 0.4s ease-in-out infinite, bossPulse 1s ease-in-out infinite;
+    }
   }
 
   &__badge {
@@ -111,6 +148,7 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
     margin-bottom: 4px;
+    animation: badgePulse 2s ease-in-out infinite;
   }
 
   &__name {
@@ -123,6 +161,28 @@
   &__status {
     font-size: 13px;
     color: $color-ink-muted;
+  }
+}
+
+// ============================================================
+// ボス討伐エフェクト（カスタムアイコン対応）
+// ============================================================
+
+.effect-boss-monster {
+  font-size: 80px;
+  animation: float 2s ease-in-out infinite;
+  transition: animation $duration-normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.is-defeated {
+    animation: bossFall 1s $ease-in-out 0.5s both;
+  }
+
+  // SVGアイコンの場合
+  svg {
+    filter: drop-shadow(0 4px 12px rgba($color-ink, 0.3));
   }
 }
 
@@ -246,37 +306,17 @@
 }
 
 // ============================================================
-// クエスト詳細画面: ボスカードのカウントダウン状態
+// アニメーション強化
 // ============================================================
-
-.boss-card {
-  transition: all $duration-normal;
-
-  &--countdown {
-    border-color: rgba($color-coral, 0.4);
-    background: linear-gradient(135deg, rgba($color-coral, 0.08), rgba($color-coral, 0.15));
-    box-shadow: 0 4px 16px rgba($color-coral, 0.15);
-  }
-
-  &__emoji {
-    &--imminent {
-      animation: monsterShake 0.4s ease-in-out infinite, bossPulse 1s ease-in-out infinite;
-    }
-  }
-
-  &__badge {
-    animation: badgePulse 2s ease-in-out infinite;
-  }
-}
 
 @keyframes bossPulse {
   0%, 100% {
     transform: scale(1);
-    filter: drop-shadow(0 2px 4px rgba($color-ink, 0.2));
+    filter: drop-shadow(0 2px 6px rgba($color-ink, 0.15));
   }
   50% {
-    transform: scale(1.05);
-    filter: drop-shadow(0 4px 8px rgba($color-coral, 0.4));
+    transform: scale(1.08);
+    filter: drop-shadow(0 4px 12px rgba($color-coral, 0.5));
   }
 }
 

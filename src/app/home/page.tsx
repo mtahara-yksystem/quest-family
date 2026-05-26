@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useChildren, useChild, useChildSkills, useGoodDeeds, useGameProgress } from '@/hooks'
 import { DEFAULT_CATEGORIES, GAME_CONFIG } from '@/constants'
+import { BossIcon } from '@/components/ui/BossIcons'
 import type { Child } from '@/types/database'
 
 export default function HomePage() {
@@ -47,11 +48,10 @@ export default function HomePage() {
   const currentRecords = progress?.total_records ?? 0
   const requiredRecords = progress?.chapter?.required_records ?? 20
   const progressPct = Math.min((currentRecords / requiredRecords) * 100, 100)
-  const charLeft = `${1 + (progressPct / 100) * 79}%`
+  const charLeft = `${1 + (progressPct / 100) * 75}%`
   const prevPct = Math.max(progressPct - (1 / requiredRecords) * 100, 0)
-  const charFromLeft = `${1 + (prevPct / 100) * 79}%`
+  const charFromLeft = `${1 + (prevPct / 100) * 75}%`
 
-  // ★ ボス戦カウントダウン
   const remainingToBooss = Math.max(requiredRecords - currentRecords, 0)
   const showBossCountdown = remainingToBooss > 0 && remainingToBooss <= 3
   const bossImminent = remainingToBooss === 1
@@ -60,11 +60,11 @@ export default function HomePage() {
   const restCount = Math.max(skills.length - 3, 0)
 
   const cid = selectedChildId ?? ''
+  const chapterNo = progress?.chapter?.chapter_no ?? 1
 
   return (
     <div className="home">
       <div className="home-header">
-        {/* 子どもタブ */}
         <div className="child-tabs">
           {children.map((c: Child) => (
             <button
@@ -95,7 +95,7 @@ export default function HomePage() {
             <div style={{ flex: 1 }}>
               <div className="quest-bar__label">現在のクエスト</div>
               <div className="quest-bar__title">
-                第{progress?.chapter?.chapter_no ?? 1}章「{progress?.chapter?.title ?? '読み込み中'}」
+                第{chapterNo}章「{progress?.chapter?.title ?? '読み込み中'}」
               </div>
               <div className="quest-bar__progress">
                 <div className="quest-bar__bar-track">
@@ -103,7 +103,6 @@ export default function HomePage() {
                 </div>
                 <div className="quest-bar__count">{currentRecords} / {requiredRecords}</div>
               </div>
-              {/* ★ ボス戦カウントダウン表示 */}
               {showBossCountdown && (
                 <div className={`boss-countdown${bossImminent ? ' boss-countdown--imminent' : ''}`}>
                   ⚔️ あと{remainingToBooss}回でボス戦！
@@ -129,8 +128,10 @@ export default function HomePage() {
             >
               👦
             </div>
+            {/* ★ カスタムボスアイコンを使用 */}
             <div className={`map-monster${progressPct > 70 ? ' map-monster--near' : ''}`}>
-              {showBossCountdown ? '👾❗' : '👾'}
+              <BossIcon chapterNo={chapterNo} size={60} />
+              {showBossCountdown && <span className="map-monster__alert">❗</span>}
             </div>
           </div>
         </div>
@@ -144,11 +145,10 @@ export default function HomePage() {
             <div className="skill-icons">
               {topSkills.map(skill => {
                 const cat = DEFAULT_CATEGORIES.find(c => c.name === skill.category?.name)
-                // ★ レベルアップまでの残りEXP計算
                 const expInLevel = skill.exp % GAME_CONFIG.EXP_PER_LEVEL
                 const expToNextLevel = GAME_CONFIG.EXP_PER_LEVEL - expInLevel
                 const showLevelUpSoon = expToNextLevel <= 2 && expToNextLevel > 0
-                
+
                 return (
                   <div key={skill.id} className="skill-icon-item">
                     <div className="skill-icon-item__stamp" style={{ background: cat?.bgColor ?? '#F3E8FF' }}>
@@ -156,7 +156,6 @@ export default function HomePage() {
                     </div>
                     <div className="skill-icon-item__lv">
                       Lv{skill.level}
-                      {/* ★ レベルアップ予告バッジ */}
                       {showLevelUpSoon && (
                         <span className="skill-icon-item__next">↑{expToNextLevel}</span>
                       )}
@@ -199,7 +198,6 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* FAB */}
       <button
         className={`fab${fabPulse ? ' fab--pulse' : ''}`}
         onClick={() => router.push(`/stamp?childId=${cid}`)}
