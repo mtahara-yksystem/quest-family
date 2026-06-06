@@ -807,8 +807,8 @@ export function BossIcon({ bossImageUrl="/images/bosses/slime_king.svg" }: BossI
     <Image
       src={bossImageUrl}
       alt="edit"
-      width={80}
-      height={75}
+      width={100}
+      height={80}
     />
   );
   // switch (chapterNo) {
