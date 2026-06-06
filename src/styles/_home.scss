@@ -206,8 +206,7 @@
 .map-monster {
   position: absolute;
   bottom: 10px;
-  // キャラが最大 80% まで来るので、その少し先に配置
-  left: 80%;
+  left: 75%;
   transform: translateX(-50%);
   font-size: 36px;
   z-index: 1;
