@@ -61,6 +61,7 @@ export default function HomePage() {
 
   const cid = selectedChildId ?? ''
   const chapterNo = progress?.chapter?.chapter_no ?? 1
+  const bossImageUrl = progress?.chapter?.boss_image_url ?? "/images/bosses/slime_king.svg"
 
   return (
     <div className="home">
@@ -130,7 +131,7 @@ export default function HomePage() {
             </div>
             {/* ★ カスタムボスアイコンを使用 */}
             <div className={`map-monster${progressPct > 70 ? ' map-monster--near' : ''}`}>
-              <BossIcon chapterNo={chapterNo} size={60} />
+              <BossIcon bossImageUrl={bossImageUrl} />
               {showBossCountdown && <span className="map-monster__alert">❗</span>}
             </div>
           </div>

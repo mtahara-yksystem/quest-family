@@ -23,6 +23,7 @@ function QuestContent() {
   const isImminent = remaining === 1
 
   const chapterNo = currentChapter?.chapter_no ?? 1
+  const bossImageUrl = currentChapter?.boss_image_url ?? "/images/bosses/slime_king.svg"
 
   return (
     <div className="quest">
@@ -80,7 +81,7 @@ function QuestContent() {
           {/* ★ カスタムボスアイコンを使用 */}
           <div className={`boss-card${showCountdown ? ' boss-card--countdown' : ''}`}>
             <div className={`boss-card__icon${progressPct > 70 ? ' boss-card__icon--near' : ''}${isImminent ? ' boss-card__icon--imminent' : ''}`}>
-              <BossIcon chapterNo={chapterNo} size={64} />
+              <BossIcon bossImageUrl={bossImageUrl} />
             </div>
             <div>
               <div className="boss-card__badge">

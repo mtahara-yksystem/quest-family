@@ -4,6 +4,7 @@
 // ============================================================
 
 import React from 'react'
+import Image from "next/image";
 
 type BossIconProps = {
   size?: number
@@ -244,17 +245,6 @@ export function RockDragonIcon({ size = 80, className = '' }: BossIconProps) {
       />
     </svg>
   )
-}
-
-// ============================================================
-// 汎用ボスアイコンコンポーネント
-// 章番号に応じて自動選択
-// ============================================================
-
-type BossIconSelectorProps = {
-  chapterNo: number
-  size?: number
-  className?: string
 }
 
 // ============================================================
@@ -802,29 +792,47 @@ export function AncientDragonIcon({ size = 80, className = '' }: BossIconProps) 
   )
 }
 
-export function BossIcon({ chapterNo, size = 80, className = '' }: BossIconSelectorProps) {
-  switch (chapterNo) {
-    case 1:
-      return <SlimeKingIcon size={size} className={className} />
-    case 2:
-      return <ForestGolemIcon size={size} className={className} />
-    case 3:
-      return <RockDragonIcon size={size} className={className} />
-    case 4:
-      return <IceGolemIcon size={size} className={className} />
-    case 5:
-      return <FlameDemonIcon size={size} className={className} />
-    case 6:
-      return <ThunderBirdIcon size={size} className={className} />
-    case 7:
-      return <ShadowWolfIcon size={size} className={className} />
-    case 8:
-      return <CrystalSpiderIcon size={size} className={className} />
-    case 9:
-      return <DarkKnightIcon size={size} className={className} />
-    case 10:
-      return <AncientDragonIcon size={size} className={className} />
-    default:
-      return <SlimeKingIcon size={size} className={className} />
-  }
+
+// ============================================================
+// 汎用ボスアイコンコンポーネント
+// 章番号に応じて自動選択
+// ============================================================
+
+type BossIconSelectorProps = {
+  bossImageUrl: string
+}
+
+export function BossIcon({ bossImageUrl="/images/bosses/slime_king.svg" }: BossIconSelectorProps) {
+  return (
+    <Image
+      src={bossImageUrl}
+      alt="edit"
+      width={125}
+      height={80}
+    />
+  );
+  // switch (chapterNo) {
+  //   case 1:
+  //     return <SlimeKingIcon size={size} className={className} />
+  //   case 2:
+  //     return <ForestGolemIcon size={size} className={className} />
+  //   case 3:
+  //     return <RockDragonIcon size={size} className={className} />
+  //   case 4:
+  //     return <IceGolemIcon size={size} className={className} />
+  //   case 5:
+  //     return <FlameDemonIcon size={size} className={className} />
+  //   case 6:
+  //     return <ThunderBirdIcon size={size} className={className} />
+  //   case 7:
+  //     return <ShadowWolfIcon size={size} className={className} />
+  //   case 8:
+  //     return <CrystalSpiderIcon size={size} className={className} />
+  //   case 9:
+  //     return <DarkKnightIcon size={size} className={className} />
+  //   case 10:
+  //     return <AncientDragonIcon size={size} className={className} />
+  //   default:
+  //     return <SlimeKingIcon size={size} className={className} />
+  // }
 }
