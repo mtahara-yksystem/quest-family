@@ -6,6 +6,7 @@
 // ============================================================
 
 import { useEffect, useState, useCallback } from 'react'
+import { BossIcon } from '@/components/ui/BossIcons'
 
 // ---- コンフェッティ生成ユーティリティ ----
 const CONFETTI_COLORS = [
@@ -200,7 +201,7 @@ export function LevelUpEffect({
 // ============================================================
 type BossDefeatedEffectProps = {
   bossName: string
-  bossEmoji: string
+  bossImageUrl: string  // ← bossEmoji: string から変更
   chapterNo: number
   chapterTitle: string
   nextChapterTitle?: string
@@ -208,7 +209,7 @@ type BossDefeatedEffectProps = {
 }
 
 export function BossDefeatedEffect({
-  bossName, bossEmoji, chapterNo, chapterTitle, nextChapterTitle, onClose,
+  bossName, bossImageUrl, chapterNo, chapterTitle, nextChapterTitle, onClose,
 }: BossDefeatedEffectProps) {
   const [phase, setPhase] = useState<'shaking' | 'defeated' | 'banner'>('shaking')
   const [hiding, setHiding] = useState(false)
@@ -256,8 +257,9 @@ export function BossDefeatedEffect({
         </div>
       )}
 
+      {/* ★ 絵文字 → BossIcon SVG に変更 */}
       <div className={`effect-boss-monster${phase !== 'shaking' ? ' is-defeated' : ''}`}>
-        {bossEmoji}
+        <BossIcon bossImageUrl={bossImageUrl} />
       </div>
 
       {phase === 'banner' && (

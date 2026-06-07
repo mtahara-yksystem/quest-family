@@ -12,14 +12,13 @@ type EffectState =
   | { type: 'none' }
   | { type: 'record'; stamp: string; categoryName: string; comment: string | null; questTitle: string; currentRecords: number; requiredRecords: number }
   | { type: 'levelup'; newLevel: number; categoryName: string; categoryIcon: string; skillExp: number }
-  | { type: 'boss'; bossName: string; bossEmoji: string; chapterNo: number; chapterTitle: string; nextChapterTitle?: string }
+  | { type: 'boss'; bossName: string; bossImageUrl: string; chapterNo: number; chapterTitle: string; nextChapterTitle?: string }  // ← bossEmoji → bossImageUrl
   | { type: 'loop'; loopCount: number }
 
 function CommentForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const categoryId = searchParams.get('categoryId') ?? ''
-  // ★ childId を URL から取得（タブで選んだ子どもに紐づく）
   const childId = searchParams.get('childId') ?? ''
   const [comment, setComment] = useState('')
   const [category, setCategory] = useState<Category | null>(null)
@@ -52,7 +51,14 @@ function CommentForm() {
     if (result.looped) {
       setEffect({ type: 'loop', loopCount: result.newLoopCount ?? 2 })
     } else if (result.bossDefeated) {
-      setEffect({ type: 'boss', bossName: currentChapter?.boss_name ?? 'ボス', bossEmoji: '👾', chapterNo: currentChapter?.chapter_no ?? 1, chapterTitle: currentChapter?.title ?? '', nextChapterTitle: result.nextChapter?.title })
+      setEffect({
+        type: 'boss',
+        bossName: currentChapter?.boss_name ?? 'ボス',
+        bossImageUrl: currentChapter?.boss_image_url ?? '/images/bosses/slime_king.svg',  // ← bossEmoji: '👾' から変更
+        chapterNo: currentChapter?.chapter_no ?? 1,
+        chapterTitle: currentChapter?.title ?? '',
+        nextChapterTitle: result.nextChapter?.title,
+      })
     } else if (result.leveledUp) {
       setEffect({ type: 'levelup', newLevel: result.newLevel ?? 2, categoryName: category?.name ?? '', categoryIcon: defaultCat?.icon ?? '✨', skillExp: result.skillExp ?? 0 })
     } else {
