@@ -259,7 +259,7 @@ export function BossDefeatedEffect({
 
       {/* ★ 絵文字 → BossIcon SVG に変更 */}
       <div className={`effect-boss-monster${phase !== 'shaking' ? ' is-defeated' : ''}`}>
-        <BossIcon bossImageUrl={bossImageUrl} />
+        <BossIcon bossImageUrl={bossImageUrl} width={350} height={220} />
       </div>
 
       {phase === 'banner' && (

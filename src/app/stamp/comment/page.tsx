@@ -77,7 +77,6 @@ function CommentForm() {
       {effect.type === 'levelup' && <LevelUpEffect {...effect} onClose={handleEffectClose} />}
       {effect.type === 'boss'    && <BossDefeatedEffect {...effect} onClose={handleEffectClose} />}
       {effect.type === 'loop'    && <LoopEffect {...effect} onClose={handleEffectClose} />}
-
       <div className="page">
         <button className="back-btn" onClick={() => router.back()}>‹ もどる</button>
         <h1 className="page-title">コメント（任意）</h1>
