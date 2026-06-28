@@ -1,9 +1,99 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useGoodDeeds } from '@/hooks'
 import { DEFAULT_CATEGORIES } from '@/constants'
+import { createClient } from '@/lib/supabase'
+
+// ============================================================
+// 週間ヒートマップ
+// ============================================================
+
+type DayStat = {
+  date: Date
+  count: number
+  isToday: boolean
+}
+
+function WeekHeatmap({ childId }: { childId: string }) {
+  const [days, setDays] = useState<DayStat[]>([])
+
+  useEffect(() => {
+    if (!childId) return
+    const supabase = createClient()
+
+    // 今週の月曜〜日曜を算出
+    const today = new Date()
+    const dow = today.getDay() // 0=日,1=月,...
+    const monday = new Date(today)
+    monday.setDate(today.getDate() - ((dow + 6) % 7))
+    monday.setHours(0, 0, 0, 0)
+
+    const sunday = new Date(monday)
+    sunday.setDate(monday.getDate() + 6)
+    sunday.setHours(23, 59, 59, 999)
+
+    supabase
+      .from('good_deeds')
+      .select('created_at')
+      .eq('child_id', childId)
+      .gte('created_at', monday.toISOString())
+      .lte('created_at', sunday.toISOString())
+      .then(({ data }) => {
+        // 日付ごとにカウント
+        const countMap: Record<string, number> = {}
+        ;(data ?? []).forEach(d => {
+          const key = d.created_at.slice(0, 10)
+          countMap[key] = (countMap[key] ?? 0) + 1
+        })
+
+        const todayStr = today.toISOString().slice(0, 10)
+        const result: DayStat[] = Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(monday)
+          d.setDate(monday.getDate() + i)
+          const key = d.toISOString().slice(0, 10)
+          return {
+            date: d,
+            count: countMap[key] ?? 0,
+            isToday: key === todayStr,
+          }
+        })
+        setDays(result)
+      })
+  }, [childId])
+
+  const DAY_LABELS = ['月', '火', '水', '木', '金', '土', '日']
+
+  function cellClass(count: number) {
+    if (count === 0) return 'heatmap-cell'
+    if (count === 1) return 'heatmap-cell heatmap-cell--1'
+    if (count === 2) return 'heatmap-cell heatmap-cell--2'
+    return 'heatmap-cell heatmap-cell--3'
+  }
+
+  return (
+    <div className="week-heatmap">
+      <div className="week-heatmap__label">今週の記録</div>
+      <div className="week-heatmap__grid">
+        {DAY_LABELS.map((label, i) => (
+          <div key={label} className="week-heatmap__col">
+            <div className="week-heatmap__day-label">{label}</div>
+            <div
+              className={`${cellClass(days[i]?.count ?? 0)}${days[i]?.isToday ? ' heatmap-cell--today' : ''}`}
+            >
+              {days[i]?.count > 0 ? days[i].count : ''}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ============================================================
+// 記録一覧本体
+// ============================================================
 
 function RecordsContent() {
   const router = useRouter()
@@ -24,6 +114,14 @@ function RecordsContent() {
         <p className="page-subtitle">これまでのよかったこと</p>
       </div>
 
+      {/* ヒートマップ */}
+      {childId && (
+        <div style={{ padding: '0 20px 4px' }}>
+          <WeekHeatmap childId={childId} />
+        </div>
+      )}
+
+      {/* フィルタータブ */}
       <div style={{ padding: '0 20px' }}>
         <div className="filter-tabs">
           <button
@@ -44,6 +142,7 @@ function RecordsContent() {
         </div>
       </div>
 
+      {/* 記録リスト */}
       <div className="records__list">
         {loading && <div className="loading">読み込み中...</div>}
         {!loading && filtered.length === 0 && (

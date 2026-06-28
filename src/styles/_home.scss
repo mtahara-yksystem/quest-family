@@ -521,6 +521,20 @@
   }
 }
 
+.more-link {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  color: $color-purple;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.8;
+
+  &:active { opacity: 0.5; }
+}
+
 @keyframes levelUpSoonBlink {
   0%, 100% {
     opacity: 1;

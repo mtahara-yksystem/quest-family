@@ -138,7 +138,7 @@ export default function HomePage() {
         </div>
 
         {/* キャラクターカード */}
-        <div className="char-card" onClick={() => router.push(`/records?childId=${cid}`)}>
+        <div className="char-card" onClick={() => router.push(`/growth?childId=${cid}`)}>
           <div className="char-card__avatar">👦</div>
           <div className="char-card__info">
             <div className="char-card__name">{child?.name ?? '...'}</div>
@@ -175,7 +175,15 @@ export default function HomePage() {
           <div className="char-card__arrow">›</div>
         </div>
 
-        <div className="section-label">最近のよかったこと</div>
+        <div className="section-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span>最近のよかったこと</span>
+          <button
+            className="more-link"
+            onClick={() => router.push(`/records?childId=${cid}`)}
+          >
+            もっと見る ›
+          </button>
+        </div>
         {deeds.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state__icon">📖</div>
