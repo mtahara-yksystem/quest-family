@@ -54,7 +54,7 @@ function CommentForm() {
       setEffect({
         type: 'boss',
         bossName: currentChapter?.boss_name ?? 'ボス',
-        bossImageUrl: currentChapter?.boss_image_url ?? '/images/bosses/slime_king.svg',  // ← bossEmoji: '👾' から変更
+        bossImageUrl: currentChapter?.boss_image_url ?? '',
         chapterNo: currentChapter?.chapter_no ?? 1,
         chapterTitle: currentChapter?.title ?? '',
         nextChapterTitle: result.nextChapter?.title,

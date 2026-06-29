@@ -11,12 +11,16 @@ import Image from "next/image";
 // ============================================================
 
 type BossIconSelectorProps = {
-  bossImageUrl: string,
+  bossImageUrl?: string | null,
   width?: number,
   height?: number
 }
 
-export function BossIcon({ bossImageUrl="/images/bosses/slime_king.svg", width=110, height = 85 }: BossIconSelectorProps) {
+export function BossIcon({ bossImageUrl, width=110, height = 85 }: BossIconSelectorProps) {
+  if (!bossImageUrl) {
+    return <div style={{ width, height }} />;
+  }
+
   return (
     <Image
       src={bossImageUrl}

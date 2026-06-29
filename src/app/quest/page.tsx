@@ -23,7 +23,7 @@ function QuestContent() {
   const isImminent = remaining === 1
 
   const chapterNo = currentChapter?.chapter_no ?? 1
-  const bossImageUrl = currentChapter?.boss_image_url ?? "/images/bosses/slime_king.svg"
+  const bossImageUrl = currentChapter?.boss_image_url
 
   return (
     <div className="quest">

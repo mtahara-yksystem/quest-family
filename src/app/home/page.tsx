@@ -61,7 +61,7 @@ export default function HomePage() {
 
   const cid = selectedChildId ?? ''
   const chapterNo = progress?.chapter?.chapter_no ?? 1
-  const bossImageUrl = progress?.chapter?.boss_image_url ?? "/images/bosses/slime_king.svg"
+  const bossImageUrl = progress?.chapter?.boss_image_url
 
   return (
     <div className="home">
