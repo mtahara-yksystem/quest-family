@@ -8,6 +8,8 @@ import type {
   GameProgressWithChapter,
   ChildSkillWithCategory,
 } from '@/types/database'
+import { fetchMonthlySummary } from '@/lib/monthlySummary'
+import type { MonthlySummaryData } from '@/lib/monthlySummary'
 
 // ---- 親に紐づく全子ども一覧 ----
 export function useChildren() {
@@ -159,6 +161,15 @@ export function useRecordGoodDeed() {
     const bossDefeated = progressAfter?.chapter_id !== progressBefore?.chapter_id
     const looped = (progressAfter?.loop_count ?? 1) > (progressBefore?.loop_count ?? 1)
 
+    if (bossDefeated && progressBefore) {
+      await supabase.from('chapter_clear_events').insert({
+        child_id: params.childId,
+        chapter_id: progressBefore.chapter_id,
+        chapter_no: progressBefore.chapter?.chapter_no,
+        loop_count: progressBefore.loop_count ?? 1,
+      })
+    }
+
     let nextChapter = null
     if (bossDefeated && !looped) {
       const { data } = await supabase.from('chapters')
@@ -175,4 +186,50 @@ export function useRecordGoodDeed() {
   }
 
   return { record, loading }
+}
+
+// ---- 月次まとめ ----
+export function useMonthlySummary(childId: string | null, yearMonth: string) {
+  const [data, setData] = useState<MonthlySummaryData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const fetchSummary = useCallback(async () => {
+    if (!childId) { setLoading(false); return }
+    setLoading(true)
+    const result = await fetchMonthlySummary(childId, yearMonth)
+    setData(result)
+    setLoading(false)
+  }, [childId, yearMonth])
+
+  useEffect(() => { fetchSummary() }, [fetchSummary])
+  return { data, loading, refetch: fetchSummary }
+}
+
+// ---- 親からの一言 ----
+export function useMonthlyComment(childId: string | null, yearMonth: string) {
+  const [comment, setComment] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const supabase = createClient()
+
+  useEffect(() => {
+    if (!childId) { setLoading(false); return }
+    setLoading(true)
+    supabase.from('monthly_comments').select('comment')
+      .eq('child_id', childId).eq('year_month', yearMonth).maybeSingle()
+      .then(({ data }) => { setComment(data?.comment ?? ''); setLoading(false) })
+  }, [childId, yearMonth])
+
+  const save = async (value: string) => {
+    if (!childId) return
+    setSaving(true)
+    await supabase.from('monthly_comments').upsert(
+      { child_id: childId, year_month: yearMonth, comment: value, updated_at: new Date().toISOString() },
+      { onConflict: 'child_id,year_month' }
+    )
+    setComment(value)
+    setSaving(false)
+  }
+
+  return { comment, loading, saving, save }
 }

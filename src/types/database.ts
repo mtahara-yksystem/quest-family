@@ -76,3 +76,11 @@ export type GameProgress = {
 export type GameProgressWithChapter = GameProgress & {
   chapter: Chapter
 }
+
+export type MonthlyComment = {
+  id: string
+  child_id: string
+  year_month: string // 'YYYY-MM'
+  comment: string
+  updated_at: string
+}

@@ -113,6 +113,20 @@ export default function HomePage() {
             <div className="quest-bar__arrow">›</div>
           </div>
         </div>
+
+        <div style={{ padding: '0 20px 20px' }}>
+          <button
+            className="quest-bar"
+            style={{ width: '100%', border: 'none' }}
+            onClick={() => router.push(`/summary?childId=${cid}`)}>
+            <div>
+              <div className="quest-bar__label">今月のまとめ</div>
+              <div className="quest-bar__title">がんばりを1枚のレポートに</div>
+            </div>
+            <div className="quest-bar__arrow">›</div>
+          </button>
+        </div>
+
       </div>
 
       <div className="home__content">

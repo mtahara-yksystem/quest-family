@@ -1,0 +1,220 @@
+// ============================================================
+// src/styles/_summary.scss
+// ============================================================
+
+@use 'variables' as *;
+@use 'keyframes';
+
+.summary-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  &__label {
+    font-size: 16px;
+    font-weight: 900;
+    color: $color-ink;
+  }
+
+  &__arrow {
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    color: $color-purple;
+    cursor: pointer;
+
+    &:disabled { opacity: 0.35; cursor: not-allowed; }
+  }
+}
+
+.summary-card {
+  background: $color-white;
+  border-radius: $radius-lg;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba($color-ink, 0.08);
+
+  &__header {
+    text-align: center;
+    background: $color-purple-light;
+    border-radius: $radius-md;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+
+  &__period {
+    font-size: 11px;
+    font-weight: 800;
+    color: $color-purple;
+    letter-spacing: 0.04em;
+  }
+
+  &__title {
+    font-size: 18px;
+    font-weight: 900;
+    color: $color-ink;
+    margin-top: 4px;
+  }
+
+  &__boss-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: $color-sky-light;
+    border-radius: $radius-md;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+
+    &--pending { background: $color-gold-light; }
+  }
+
+  &__boss-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    // next/image が付与するインラインstyleに勝つため !important が必要
+    img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain;
+    }
+
+    &--emoji { font-size: 32px; }
+  }
+
+  &__boss-label {
+    font-size: 11px;
+    font-weight: 800;
+    color: $color-ink-muted;
+  }
+
+  &__boss-title {
+    font-size: 15px;
+    font-weight: 900;
+    color: $color-ink;
+  }
+
+  &__boss-sub {
+    font-size: 12px;
+    color: $color-ink-muted;
+    margin-top: 2px;
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  &__stat {
+    background: $color-surface;
+    border-radius: $radius-sm;
+    text-align: center;
+    padding: 10px 4px;
+  }
+
+  &__stat-num {
+    font-size: 20px;
+    font-weight: 900;
+    color: $color-ink;
+  }
+
+  &__stat-label {
+    font-size: 11px;
+    color: $color-ink-muted;
+    font-weight: 700;
+  }
+
+  &__section-label {
+    font-size: 12px;
+    font-weight: 800;
+    color: $color-ink-muted;
+    margin-bottom: 8px;
+  }
+
+  &__highlight {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: $color-surface;
+    border-radius: $radius-sm;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+  }
+
+  &__highlight-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  &__highlight-text {
+    font-size: 13px;
+    font-weight: 700;
+    color: $color-ink;
+  }
+
+  &__growth-summary {
+    font-size: 13px;
+    color: $color-ink-muted;
+    background: $color-surface;
+    border-radius: $radius-sm;
+    padding: 10px 12px;
+    margin: 12px 0;
+  }
+
+  &__comment {
+    border: 2px solid #E0D8F0;
+    border-radius: $radius-sm;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+  }
+
+  &__comment-label {
+    font-size: 11px;
+    color: $color-ink-muted;
+    margin-bottom: 4px;
+  }
+
+  &__comment-body {
+    font-size: 14px;
+    font-weight: 700;
+    color: $color-ink;
+  }
+
+  &__badge {
+    text-align: center;
+    background: $color-purple;
+    color: $color-white;
+    border-radius: $radius-pill;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 800;
+    display: inline-block;
+  }
+}
+
+.summary-comment-editor {
+  margin-bottom: 12px;
+
+  &__count {
+    text-align: right;
+    font-size: 11px;
+    color: $color-ink-muted;
+    margin: -12px 0 12px;
+  }
+}

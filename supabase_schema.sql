@@ -204,3 +204,25 @@ alter table public.categories enable row level security;
 alter table public.chapters   enable row level security;
 create policy "categories are public" on public.categories for select using (true);
 create policy "chapters are public"   on public.chapters   for select using (true);
+
+-- monthly_comments: 親からの一言（月×子どもごとに1件）
+create table if not exists monthly_comments (
+  id uuid primary key default gen_random_uuid(),
+  child_id uuid references children(id) on delete cascade not null,
+  year_month text not null, -- 'YYYY-MM'
+  comment text not null default '',
+  updated_at timestamptz not null default now(),
+  unique (child_id, year_month)
+);
+
+create table if not exists chapter_clear_events (
+  id uuid primary key default gen_random_uuid(),
+  child_id uuid references children(id) on delete cascade not null,
+  chapter_id uuid references chapters(id) not null,
+  chapter_no integer not null,
+  loop_count integer not null default 1,
+  cleared_at timestamptz not null default now()
+);
+
+create index if not exists idx_chapter_clear_events_child_time
+  on chapter_clear_events(child_id, cleared_at);
