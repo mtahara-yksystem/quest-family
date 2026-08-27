@@ -33,11 +33,34 @@ export const SLIDER_LABELS: Record<number, string> = {
 export const GAME_CONFIG = {
   // 1章あたりの必要記録数（デフォルト値）
   RECORDS_PER_CHAPTER: 20,
-  // レベルアップに必要なEXP
+  // カテゴリ別スキルのレベルアップに必要なEXP
   EXP_PER_LEVEL: 10,
   // スキルEXPのスライダー最大値（初期値上限）
   SKILL_SLIDER_MAX: 10,
+  // ★ 総合レベル（キャラクター全体）に必要なEXP。
+  // 全カテゴリ合計の記録数がベース。カテゴリ別(10)より小さくして
+  // 「記録するたびに何か育つ」体感速度を作る。様子を見て調整する。
+  CHAR_EXP_PER_LEVEL: 4,
 } as const
+
+// 総合レベル帯ごとの称号（低い順に並べる）
+export const CHAR_LEVEL_TITLES: { minLevel: number; title: string }[] = [
+  { minLevel: 1,  title: '冒険者のたまご' },
+  { minLevel: 3,  title: 'かけだし冒険者' },
+  { minLevel: 6,  title: 'たのもしい冒険者' },
+  { minLevel: 10, title: 'ベテラン冒険者' },
+  { minLevel: 15, title: '伝説の冒険者' },
+]
+
+export function getCharTitle(level: number): string {
+  const matched = [...CHAR_LEVEL_TITLES].reverse().find(t => level >= t.minLevel)
+  return matched?.title ?? CHAR_LEVEL_TITLES[0].title
+}
+
+// 総合EXP（全カテゴリのexp合計）からキャラクターレベルを算出
+export function calcCharLevel(totalExp: number): number {
+  return Math.floor(totalExp / GAME_CONFIG.CHAR_EXP_PER_LEVEL) + 1
+}
 
 // MVPの章データ（chaptersテーブルにシードする or コードで管理）
 // map_image_url・boss_image_url は将来的にDBから読む

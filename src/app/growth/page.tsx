@@ -217,7 +217,11 @@ function GrowthContent() {
       <div className="growth-skill-list">
         {allSkills.map(skill => {
           const expInLevel = skill.exp % GAME_CONFIG.EXP_PER_LEVEL
-          const pct = Math.round((skill.exp / maxExp) * 100)
+          // ★ 現在のレベル内での進捗率（0〜EXP_PER_LEVELの中の位置）に修正
+          const pct = Math.round((expInLevel / GAME_CONFIG.EXP_PER_LEVEL) * 100)
+          // ★ ジャストレベルアップ直後(expInLevel=0)は「あと10」を表示する
+          const remaining = expInLevel === 0 ? GAME_CONFIG.EXP_PER_LEVEL : GAME_CONFIG.EXP_PER_LEVEL - expInLevel
+
           return (
             <div key={skill.name} className="growth-skill-item">
               <div
@@ -241,7 +245,7 @@ function GrowthContent() {
                   累計 {skill.exp} ポイント
                   {expInLevel > 0 && (
                     <span className="growth-skill-item__next">
-                      　次のレベルまであと {GAME_CONFIG.EXP_PER_LEVEL - expInLevel}
+                      　次のレベルまであと {remaining}
                     </span>
                   )}
                 </div>

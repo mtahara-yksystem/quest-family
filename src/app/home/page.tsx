@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useChildren, useChild, useChildSkills, useGoodDeeds, useGameProgress } from '@/hooks'
-import { DEFAULT_CATEGORIES, GAME_CONFIG } from '@/constants'
 import { BossIcon } from '@/components/ui/BossIcons'
 import type { Child } from '@/types/database'
+import { DEFAULT_CATEGORIES, GAME_CONFIG, calcCharLevel, getCharTitle } from '@/constants'
 
 export default function HomePage() {
   const router = useRouter()
@@ -56,6 +56,9 @@ export default function HomePage() {
   const showBossCountdown = remainingToBooss > 0 && remainingToBooss <= 3
   const bossImminent = remainingToBooss === 1
 
+  const totalExp = skills.reduce((sum, s) => sum + (s.exp ?? 0), 0)
+  const charLevel = calcCharLevel(totalExp)
+  const charTitle = getCharTitle(charLevel)
   const topSkills = skills.slice(0, 3)
   const restCount = Math.max(skills.length - 3, 0)
 
@@ -156,7 +159,7 @@ export default function HomePage() {
           <div className="char-card__avatar">👦</div>
           <div className="char-card__info">
             <div className="char-card__name">{child?.name ?? '...'}</div>
-            <div className="char-card__level">⭐ 冒険者の卵</div>
+            <div className="char-card__level">⭐ Lv.{charLevel} {charTitle}</div>
             <div className="skill-icons">
               {topSkills.map(skill => {
                 const cat = DEFAULT_CATEGORIES.find(c => c.name === skill.category?.name)

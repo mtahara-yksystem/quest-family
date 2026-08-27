@@ -197,6 +197,49 @@ export function LevelUpEffect({
 }
 
 // ============================================================
+// 2b. 総合(キャラクター)レベルアップエフェクト
+// カテゴリ別スキルとは別に、全記録の合計で上がる「キャラ全体」のレベル
+// ============================================================
+type CharLevelUpEffectProps = {
+  newLevel: number
+  title: string   // getCharTitle() の結果
+  totalExp: number
+  onClose: () => void
+}
+
+export function CharLevelUpEffect({
+  newLevel, title, totalExp, onClose,
+}: CharLevelUpEffectProps) {
+  const [hiding, setHiding] = useState(false)
+
+  const handleClose = useCallback(() => {
+    setHiding(true)
+    setTimeout(onClose, 300)
+  }, [onClose])
+
+  useEffect(() => {
+    const t = setTimeout(handleClose, 4000)
+    return () => clearTimeout(t)
+  }, [handleClose])
+
+  return (
+    <div
+      className={`effect-levelup-overlay${hiding ? ' is-hiding' : ''}`}
+      onClick={handleClose}
+    >
+      <Confetti count={60} />
+      <div className="effect-levelup-label">Level Up!</div>
+      <div className="effect-levelup-char">👑</div>
+      <div className="effect-levelup-text">
+        Lv.<span>{newLevel}</span>
+      </div>
+      <div className="effect-levelup-title">{title}</div>
+      <div className="effect-levelup-sub">これまでの記録：{totalExp}回</div>
+    </div>
+  )
+}
+
+// ============================================================
 // 3. ボス討伐エフェクト（章クリア）
 // ============================================================
 type BossDefeatedEffectProps = {

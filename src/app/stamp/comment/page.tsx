@@ -3,16 +3,17 @@
 import { useState, Suspense, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useRecordGoodDeed, useGameProgress } from '@/hooks'
-import { DEFAULT_CATEGORIES } from '@/constants'
 import { createClient } from '@/lib/supabase'
 import type { Category } from '@/types/database'
-import { RecordEffect, LevelUpEffect, BossDefeatedEffect, LoopEffect } from '@/components/features/game/Effects'
+import { RecordEffect, LevelUpEffect, CharLevelUpEffect, BossDefeatedEffect, LoopEffect } from '@/components/features/game/Effects'
+import { DEFAULT_CATEGORIES, getCharTitle } from '@/constants'
 
 type EffectState =
   | { type: 'none' }
   | { type: 'record'; stamp: string; categoryName: string; comment: string | null; questTitle: string; currentRecords: number; requiredRecords: number }
   | { type: 'levelup'; newLevel: number; categoryName: string; categoryIcon: string; skillExp: number }
-  | { type: 'boss'; bossName: string; bossImageUrl: string; chapterNo: number; chapterTitle: string; nextChapterTitle?: string }  // ← bossEmoji → bossImageUrl
+  | { type: 'charlevelup'; newLevel: number; title: string; totalExp: number }
+  | { type: 'boss'; bossName: string; bossImageUrl: string; chapterNo: number; chapterTitle: string; nextChapterTitle?: string }
   | { type: 'loop'; loopCount: number }
 
 function CommentForm() {
@@ -59,6 +60,9 @@ function CommentForm() {
         chapterTitle: currentChapter?.title ?? '',
         nextChapterTitle: result.nextChapter?.title,
       })
+    } else if (result.charLeveledUp) {
+      const lv = result.newCharLevel ?? 2
+      setEffect({ type: 'charlevelup', newLevel: lv, title: getCharTitle(lv), totalExp: result.totalExp ?? 0 })
     } else if (result.leveledUp) {
       setEffect({ type: 'levelup', newLevel: result.newLevel ?? 2, categoryName: category?.name ?? '', categoryIcon: defaultCat?.icon ?? '✨', skillExp: result.skillExp ?? 0 })
     } else {
@@ -75,6 +79,7 @@ function CommentForm() {
     <>
       {effect.type === 'record'  && <RecordEffect {...effect} onClose={handleEffectClose} />}
       {effect.type === 'levelup' && <LevelUpEffect {...effect} onClose={handleEffectClose} />}
+      {effect.type === 'charlevelup' && <CharLevelUpEffect {...effect} onClose={handleEffectClose} />}
       {effect.type === 'boss'    && <BossDefeatedEffect {...effect} onClose={handleEffectClose} />}
       {effect.type === 'loop'    && <LoopEffect {...effect} onClose={handleEffectClose} />}
       <div className="page">

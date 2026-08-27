@@ -10,6 +10,7 @@ import type {
 } from '@/types/database'
 import { fetchMonthlySummary } from '@/lib/monthlySummary'
 import type { MonthlySummaryData } from '@/lib/monthlySummary'
+import { GAME_CONFIG, calcCharLevel } from '@/constants'
 
 // ---- 親に紐づく全子ども一覧 ----
 export function useChildren() {
@@ -116,6 +117,18 @@ export function useGameProgress(childId: string | null) {
   return { progress, loading, refetch: fetch }
 }
 
+// ---- 子どもの総合EXP（全カテゴリ合計）を取得 ----
+async function fetchTotalExp(
+  supabase: ReturnType<typeof createClient>,
+  childId: string
+): Promise<number> {
+  const { data } = await supabase
+    .from('child_skills')
+    .select('exp')
+    .eq('child_id', childId)
+  return (data ?? []).reduce((sum, row) => sum + (row.exp ?? 0), 0)
+}
+
 // ---- よかったこと登録 ----
 export function useRecordGoodDeed() {
   const [loading, setLoading] = useState(false)
@@ -128,6 +141,9 @@ export function useRecordGoodDeed() {
     recordedBy: 'parent' | 'child'
   }) => {
     setLoading(true)
+
+    // ★ 総合レベル判定用：記録前の全カテゴリexp合計
+    const totalExpBefore = await fetchTotalExp(supabase, params.childId)
 
     const { error } = await supabase.from('good_deeds').insert({
       child_id: params.childId,
@@ -150,6 +166,13 @@ export function useRecordGoodDeed() {
 
     const leveledUp = (skillAfter?.level ?? 1) > (skillBefore?.level ?? 1)
 
+    // ★ 総合レベル判定用：記録後の全カテゴリexp合計を再取得
+    // （increment_skill_exp側の実装差異に依存しないよう素朴に取り直す）
+    const totalExpAfter = await fetchTotalExp(supabase, params.childId)
+    const charLevelBefore = calcCharLevel(totalExpBefore)
+    const charLevelAfter = calcCharLevel(totalExpAfter)
+    const charLeveledUp = charLevelAfter > charLevelBefore
+
     const { data: progressBefore } = await supabase.from('game_progress')
       .select('*, chapter:chapters(*)').eq('child_id', params.childId).single()
 
@@ -160,15 +183,6 @@ export function useRecordGoodDeed() {
 
     const bossDefeated = progressAfter?.chapter_id !== progressBefore?.chapter_id
     const looped = (progressAfter?.loop_count ?? 1) > (progressBefore?.loop_count ?? 1)
-
-    if (bossDefeated && progressBefore) {
-      await supabase.from('chapter_clear_events').insert({
-        child_id: params.childId,
-        chapter_id: progressBefore.chapter_id,
-        chapter_no: progressBefore.chapter?.chapter_no,
-        loop_count: progressBefore.loop_count ?? 1,
-      })
-    }
 
     let nextChapter = null
     if (bossDefeated && !looped) {
@@ -181,6 +195,7 @@ export function useRecordGoodDeed() {
     return {
       error: null, leveledUp,
       newLevel: skillAfter?.level, skillExp: skillAfter?.exp,
+      charLeveledUp, newCharLevel: charLevelAfter, totalExp: totalExpAfter,
       bossDefeated, looped, newLoopCount: progressAfter?.loop_count, nextChapter,
     }
   }
